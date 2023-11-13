@@ -1,0 +1,11 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="AppKt" type="JetRunConfigurationType" nameIsGenerated="true">
+    <option name="MAIN_CLASS_NAME" value="wafna.dbexplorer.server.AppKt" />
+    <module name="db-explorer.server.main" />
+    <option name="PROGRAM_PARAMETERS" value="--env=.local/aus-dev.env configs/dev.yml" />
+    <shortenClasspath name="NONE" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

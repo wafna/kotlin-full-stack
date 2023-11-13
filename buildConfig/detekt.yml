@@ -1,0 +1,4 @@
+# https://detekt.dev/docs/introduction/configurations/
+complexity:
+  TooManyFunctions:
+    thresholdInFiles: 20
