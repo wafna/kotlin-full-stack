@@ -25,9 +25,6 @@ private object API
 
 private val log = LazyLogger(API::class)
 
-/**
- * Sets the given status code into the response if the block returns normally.
- */
 suspend fun ApplicationCall.bracket(
     status: HttpStatusCode = HttpStatusCode.OK,
     block: suspend ApplicationCall.() -> Unit,
@@ -40,14 +37,6 @@ suspend fun ApplicationCall.bracket(
         internalServerError()
     }
 
-// Hack to (temporarily) work around the mangling Kotlin does to the names of the fields in the browser.
-data class Schema_1(val id_1: UUID, val data_1: String) : Mangled {
-    fun domain(): Schema = TODO() // Schema(id_1, data_1)
-}
-
-/**
- * The browser API.
- */
 context(ServerContext)
 internal fun Route.api() {
     get("/schemas") {
