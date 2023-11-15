@@ -10,9 +10,6 @@ import io.ktor.server.request.uri
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
-import java.util.UUID
-import wafna.dbexplorer.domain.Mangled
-import wafna.dbexplorer.domain.Schema
 import wafna.dbexplorer.domain.TableDetail
 import wafna.dbexplorer.util.LazyLogger
 
