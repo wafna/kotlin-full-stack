@@ -1,11 +1,11 @@
 package gridley
 
-import web.cssom.ClassName
 import react.FC
 import react.Props
 import react.dom.aria.ariaLabel
 import react.useState
 import util.withTargetValue
+import web.cssom.ClassName
 import web.html.InputType
 import react.dom.html.ReactHTML as h
 

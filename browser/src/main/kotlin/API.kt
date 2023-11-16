@@ -69,8 +69,10 @@ private fun makeURL(path: String, vararg params: Pair<String, String>): String =
 object API {
     suspend fun listSchemas(): List<Schema> =
         json(get(makeURL("schemas")))
+
     suspend fun listTables(schemaName: String): List<Table> =
         json(get(makeURL("tables/${schemaName}")))
+
     suspend fun tableDetail(schemaName: String, tableName: String): TableDetail =
         json(get(makeURL("tables/${schemaName}/${tableName}")))
 }

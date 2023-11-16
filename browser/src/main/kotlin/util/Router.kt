@@ -7,56 +7,35 @@ import react.Props
 
 typealias Params = Map<String, String>
 
-fun Params.getInt(param: String): Int? = get(param)?.toIntOrNull()
-
-class ParamBuilder internal constructor() {
-    private val params = mutableMapOf<String, String>()
-    internal fun toMap(): Params = params.toMap()
-
-    operator fun Pair<String, Any?>.unaryPlus() {
-        if (params.containsKey(this.first))
-            throw Exception("Duplicate parameter ${this.first}")
-        params[this.first] = this.second?.toString() ?: ""
-    }
-}
-
-fun paramBuilder(block: ParamBuilder.() -> Unit): Params =
-    ParamBuilder().also { it.block() }.toMap()
-
-
 /**
  * The router treats the hash fragment as an id followed by an optional query string.
  */
 data class HashRoute(val path: String, val params: Params = mapOf()) {
+    constructor(path: String, vararg params: Pair<String, String>) : this(path, mapOf(*params))
+
     /**
      * For anchors.
      */
-    val href by lazy {
-        buildString {
-            append("#")
-            append(path)
-            if (params.isNotEmpty()) {
-                append("?")
-                var sep = false
-                for (param in params) {
-                    if (sep) append("&") else sep = true
-                    append(param.key)
-                    append("=")
-                    append(param.value)
-                }
+    val href = buildString {
+        append("#")
+        append(path)
+        if (params.isNotEmpty()) {
+            append("?")
+            var sep = false
+            for (param in params) {
+                if (sep) append("&") else sep = true
+                append(param.key)
+                append("=")
+                append(param.value)
             }
         }
     }
 
-    @Suppress("unused")
     fun goto() {
         window.location.hash = href
     }
 
     companion object {
-        fun build(routeId: String, params: ParamBuilder.() -> Unit): HashRoute =
-            HashRoute(routeId, paramBuilder(params))
-
         /**
          * Retrieves the current hash parsed as a HashRoute.
          */
@@ -111,6 +90,10 @@ interface Route {
      * Returns the hash with no params.  Most routes will work this way.
      */
     fun defaultHash(): HashRoute = HashRoute(routeId)
+
+    operator fun invoke() {
+        defaultHash().goto()
+    }
 }
 
 /**
@@ -141,6 +124,7 @@ fun ChildrenBuilder.doRoute(
                     console.warn("Bad route hash", hash)
                     defPage {}
                 }
+
                 else -> (page.component(hash.params)){}
             }
         }

@@ -1,12 +1,12 @@
 package util
 
-import web.html.HTMLInputElement
 import react.PropsWithChildren
 import react.PropsWithClassName
 import react.PropsWithStyle
 import react.dom.events.ChangeEvent
 import react.dom.events.MouseEvent
 import web.cssom.ClassName
+import web.html.HTMLInputElement
 
 /**
  * There is no JSX style way to push a component's properties down, en masse.

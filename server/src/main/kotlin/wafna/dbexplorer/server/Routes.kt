@@ -10,6 +10,7 @@ import io.ktor.server.request.uri
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
+import io.ktor.server.routing.route
 import wafna.dbexplorer.domain.TableDetail
 import wafna.dbexplorer.util.LazyLogger
 
@@ -40,28 +41,30 @@ internal fun Route.api() {
             respond(schemas)
         }
     }
-    get("/tables/{schema}") {
-        val schemaName = call.parameters["schema"]!!
-        call.bracket {
-            val tables = db.meta.listTables(schemaName)
-            respond(tables)
-            ok()
-        }
-    }
-    get("/tables/{schema}/{table}") {
-        val schemaName = call.parameters["schema"]!!
-        val tableName = call.parameters["table"]!!
-        call.bracket {
-            val table = db.meta.getTable(schemaName, tableName)
-            if (null == table) {
-                notFound()
-                return@bracket
+    route("/tables"){
+        get("/{schema}") {
+            val schemaName = call.parameters["schema"]!!
+            call.bracket {
+                val tables = db.meta.listTables(schemaName)
+                respond(tables)
+                ok()
             }
-            val columns = db.meta.listColumns(schemaName, tableName)
-            val constraints = db.meta.listConstraints(schemaName, tableName)
-                .filter { ! it.constraintName.contains("_not_null") }
-            val indexes = db.meta.listIndexes(schemaName, tableName)
-            respond(TableDetail(table, columns, constraints, indexes))
+        }
+        get("/{schema}/{table}") {
+            val schemaName = call.parameters["schema"]!!
+            val tableName = call.parameters["table"]!!
+            call.bracket {
+                val table = db.meta.getTable(schemaName, tableName)
+                if (null == table) {
+                    notFound()
+                    return@bracket
+                }
+                val columns = db.meta.listColumns(schemaName, tableName)
+                val constraints = db.meta.listConstraints(schemaName, tableName)
+                    .filter { ! it.constraintName.contains("_not_null") }
+                val indexes = db.meta.listIndexes(schemaName, tableName)
+                respond(TableDetail(table, columns, constraints, indexes))
+            }
         }
     }
 }

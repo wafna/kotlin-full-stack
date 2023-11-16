@@ -27,6 +27,7 @@ object SchemasRoute : Route {
 enum class ParamNames(val value: String) {
     Schema("schema"),
     Table("table");
+
     operator fun invoke(): String = value
 }
 
@@ -37,6 +38,7 @@ object TablesRoute : Route {
             schemaName = params[ParamNames.Schema()]!!
         }
     }
+
     fun makeHash(schemaName: String): HashRoute = HashRoute(routeId, mapOf(ParamNames.Schema() to schemaName))
 }
 
@@ -48,8 +50,9 @@ object TableDetailRoute : Route {
             tableName = params[ParamNames.Table()]!!
         }
     }
+
     fun makeHash(schemaName: String, tableName: String): HashRoute =
-        HashRoute(routeId, mapOf(ParamNames.Schema() to schemaName, ParamNames.Table() to tableName))
+        HashRoute(routeId, ParamNames.Schema() to schemaName, ParamNames.Table() to tableName)
 }
 
 val Routes = listOf(SchemasRoute, TablesRoute, TableDetailRoute)
@@ -77,7 +80,10 @@ val App = FC<Props> {
             Col {
                 scale = ColumnScale.Large
                 size = 12
-                h.h1 { +"DB Explorer" }
+                h.h1 {
+                    +"DB Explorer"
+                    onClick = { updateRoute() }
+                }
             }
         }
 
