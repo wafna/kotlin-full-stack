@@ -3,6 +3,8 @@ package pages
 import API
 import domain.Table
 import TableDetailRoute
+import gridley.DisplayColumnPre
+import gridley.DisplayColumnStdHdr
 import kotlinx.coroutines.launch
 import mainScope
 import gridley.createGrid

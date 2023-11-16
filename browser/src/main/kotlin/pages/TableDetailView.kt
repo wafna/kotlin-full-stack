@@ -59,9 +59,27 @@ val TableDetailView = FC<TableDetailProps> { props ->
                     }
                 }
             }
+            h.h4 { +"Indexes" }
+            h.table {
+                className = ClassName("table table-lg")
+                h.thead {
+                    h.tr {
+                        h.th { h.span { +"Name" } }
+                        h.th { h.span { +"Definition" } }
+                    }
+                }
+                h.tbody {
+                    tableDetail!!.indexes.forEach { index ->
+                        h.tr {
+                            h.td { h.pre { +index.indexName } }
+                            h.td { h.pre { +index.indexDef } }
+                        }
+                    }
+                }
+            }
             h.h4 { +"Constraints" }
             h.table {
-                className = ClassName("table table-sm")
+                className = ClassName("table table-lg")
                 h.thead {
                     h.tr {
                         h.th { h.span { +"Name" } }

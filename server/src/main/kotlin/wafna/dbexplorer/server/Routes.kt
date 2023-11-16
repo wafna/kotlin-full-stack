@@ -59,6 +59,7 @@ internal fun Route.api() {
             }
             val columns = db.metaDAO.listColumns(schemaName, tableName)
             val constraints = db.metaDAO.listConstraints(schemaName, tableName)
+                .filter { ! it.constraintName.contains("_not_null") }
             val indexes = db.metaDAO.listIndexes(schemaName, tableName)
             respond(TableDetail(table, columns, constraints, indexes))
         }
