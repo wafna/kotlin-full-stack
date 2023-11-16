@@ -22,7 +22,7 @@ private val tableProjection = listOf(
     "commit_action"
 )
 
-private val listProjection = listOf(
+private val viewProjection = listOf(
     "table_catalog", "table_schema", "table_name", "view_definition", "check_option", "is_updatable",
     "is_insertable_into", "is_trigger_updatable", "is_trigger_deletable", "is_trigger_insertable_into"
 )
@@ -65,7 +65,7 @@ internal fun createMetaDAO(): MetaDAO = object : MetaDAO {
     ) { it.readTable() }.firstOrNull()
 
     override suspend fun listViews(schemaName: String): List<View> = select(
-        """SELECT ${listProjection()}
+        """SELECT ${viewProjection()}
           |FROM information_schema.views
           |WHERE table_schema = ?""".trimMargin(),
         schemaName
