@@ -8,6 +8,7 @@ import wafna.dbexplorer.domain.View
 import javax.sql.DataSource
 import wafna.dbexplorer.domain.Column
 import wafna.dbexplorer.domain.Constraint
+import wafna.dbexplorer.domain.Index
 
 fun createAppDB(dataSource: DataSource): AppDB {
     with(Database(dataSource)) {
@@ -28,4 +29,5 @@ interface MetaDAO {
     suspend fun listViews(schemaName: String): List<View>
     suspend fun listColumns(schemaName: String, tableName: String): List<Column>
     suspend fun listConstraints(schemaName: String, tableName: String): List<Constraint>
+    suspend fun listIndexes(schemaName: String, tableName: String): List<Index>
 }

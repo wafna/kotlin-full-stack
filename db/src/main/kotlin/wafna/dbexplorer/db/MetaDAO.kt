@@ -5,16 +5,14 @@ package wafna.dbexplorer.db
 import arrow.core.getOrElse
 import arrow.core.toOption
 import java.sql.ResultSet
+import wafna.dbexplorer.db.marshallers.schemaMarshaller
 import wafna.dbexplorer.domain.Column
 import wafna.dbexplorer.domain.Constraint
+import wafna.dbexplorer.domain.Index
 import wafna.dbexplorer.domain.Schema
 import wafna.dbexplorer.domain.Table
 import wafna.dbexplorer.domain.View
 
-private val schemaProjection = listOf(
-    "catalog_name", "schema_name", "schema_owner", "default_character_set_catalog", "default_character_set_schema",
-    "default_character_set_name", "sql_path"
-)
 
 private val tableProjection = listOf(
     "table_catalog", "table_schema", "table_name", "table_type", "self_referencing_column_name", "reference_generation",
@@ -37,6 +35,10 @@ private val constraintProjection = listOf(
     "constraint_type", "is_deferrable", "initially_deferred", "enforced", "nulls_distinct"
 )
 
+private val indexProjection = listOf(
+    "schemaname", "tablename", "indexname", "tablespace", "indexdef"
+)
+
 private operator fun List<String>.invoke(t: String? = null) = t.toOption()
     .map { prefix ->
         map { "$prefix.$it" }
@@ -45,16 +47,16 @@ private operator fun List<String>.invoke(t: String? = null) = t.toOption()
 context (Database)
 internal fun createMetaDAO(): MetaDAO = object : MetaDAO {
     override suspend fun listSchemas(): List<Schema> = select(
-        """SELECT ${schemaProjection()}
+        """SELECT ${schemaMarshaller()}
           |FROM information_schema.schemata""".trimMargin()
-    ) { it.readSchema() }
+    ) { schemaMarshaller(it) }
 
     override suspend fun listTables(schemaName: String): List<Table> = select(
         """SELECT ${tableProjection()}
           |FROM information_schema.tables
           |WHERE table_schema = ?""".trimMargin(),
         schemaName
-    ) {  it.readTable() }
+    ) { it.readTable() }
 
     override suspend fun getTable(schemaName: String, tableName: String): Table? = select(
         """SELECT ${tableProjection()}
@@ -69,34 +71,31 @@ internal fun createMetaDAO(): MetaDAO = object : MetaDAO {
           |FROM information_schema.views
           |WHERE table_schema = ?""".trimMargin(),
         schemaName
-    ) {  it.readView() }
+    ) { it.readView() }
 
     override suspend fun listColumns(schemaName: String, tableName: String): List<Column> = select(
         """SELECT ${columnProjection()}
           |FROM information_schema.columns
           |WHERE table_schema = ? AND table_name = ?""".trimMargin(),
         schemaName, tableName
-    ) {  it.readColumn() }
+    ) { it.readColumn() }
 
     override suspend fun listConstraints(schemaName: String, tableName: String): List<Constraint> = select(
         """SELECT ${constraintProjection()}
           |FROM information_schema.table_constraints
           |WHERE table_schema = ? AND table_name = ?""".trimMargin(),
         schemaName, tableName
-    ) {  it.readConstraint() }
+    ) { it.readConstraint() }
+
+    override suspend fun listIndexes(schemaName: String, tableName: String): List<Index> = select(
+        """SELECT ${indexProjection()}
+          |FROM pg_indexes
+          |WHERE schemaname = ? AND tablename = ?""".trimMargin(),
+        schemaName, tableName
+    ) { it.readIndex() }
 }
 
-fun ResultSet.readSchema() = Schema(
-    catalogName = getString("catalog_name"),
-    schemaName = getString("schema_name"),
-    schemaOwner = getString("schema_owner"),
-    defaultCharacterSetCatalog = getString("default_character_set_catalog"),
-    defaultCharacterSetSchema = getString("default_character_set_schema"),
-    defaultCharacterSetName = getString("default_character_set_name"),
-    sqlPath = getString("sql_path"),
-)
-
-fun ResultSet.readTable() = Table(
+internal fun ResultSet.readTable() = Table(
     tableCatalog = getString("table_catalog"),
     tableSchema = getString("table_schema"),
     tableName = getString("table_name"),
@@ -111,7 +110,7 @@ fun ResultSet.readTable() = Table(
     commitAction = getString("commit_action"),
 )
 
-fun ResultSet.readView() = View(
+internal fun ResultSet.readView() = View(
     tableCatalog = getString("table_catalog"),
     tableSchema = getString("table_schema"),
     tableName = getString("table_name"),
@@ -124,7 +123,7 @@ fun ResultSet.readView() = View(
     isTriggerInsertableInto = getBoolean("is_trigger_insertable_into"),
 )
 
-fun ResultSet.readColumn() = Column(
+internal fun ResultSet.readColumn() = Column(
     tableCatalog = getString("table_catalog"),
     tableSchema = getString("table_schema"),
     tableName = getString("table_name"),
@@ -135,7 +134,7 @@ fun ResultSet.readColumn() = Column(
     isNullable = getBoolean("is_nullable"),
 )
 
-fun ResultSet.readConstraint() = Constraint(
+internal fun ResultSet.readConstraint() = Constraint(
     constraintCatalog = getString("constraint_catalog"),
     constraintSchema = getString("constraint_schema"),
     constraintName = getString("constraint_name"),
@@ -147,4 +146,12 @@ fun ResultSet.readConstraint() = Constraint(
     initiallyDeferred = getBoolean("initially_deferred"),
     enforced = getBoolean("enforced"),
     nullsDistinct = getBoolean("nulls_distinct"),
+)
+
+internal fun ResultSet.readIndex() = Index(
+    schemaName = getString("schemaname"),
+    tableName = getString("tablename"),
+    indexName = getString("indexname"),
+    tableSpace = getString("tablespace"),
+    indexDef = getString("indexdef"),
 )

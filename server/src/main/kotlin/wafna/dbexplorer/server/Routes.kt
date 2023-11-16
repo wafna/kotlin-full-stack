@@ -15,7 +15,6 @@ import wafna.dbexplorer.util.LazyLogger
 
 fun ApplicationCall.ok() = response.status(HttpStatusCode.OK)
 fun ApplicationCall.internalServerError() = response.status(HttpStatusCode.InternalServerError)
-fun ApplicationCall.badRequest() = response.status(HttpStatusCode.BadRequest)
 fun ApplicationCall.notFound() = response.status(HttpStatusCode.NotFound)
 
 private object API
@@ -24,15 +23,14 @@ private val log = LazyLogger(API::class)
 
 suspend fun ApplicationCall.bracket(
     status: HttpStatusCode = HttpStatusCode.OK,
-    block: suspend ApplicationCall.() -> Unit,
-) =
-    either {
-        Either.catch { block() }.bind()
-        response.status(status)
-    }.mapLeft { e ->
-        log.error(e) { "HTTP Error: ${request.httpMethod.value} ${request.uri}" }
-        internalServerError()
-    }
+    block: suspend ApplicationCall.() -> Unit
+) = either {
+    Either.catch { block() }.bind()
+    response.status(status)
+}.mapLeft { e ->
+    log.error(e) { "HTTP Error: ${request.httpMethod.value} ${request.uri}" }
+    internalServerError()
+}
 
 context(ServerContext)
 internal fun Route.api() {
@@ -47,6 +45,7 @@ internal fun Route.api() {
         call.bracket {
             val tables = db.metaDAO.listTables(schemaName)
             respond(tables)
+            ok()
         }
     }
     get("/tables/{schema}/{table}") {
@@ -60,7 +59,8 @@ internal fun Route.api() {
             }
             val columns = db.metaDAO.listColumns(schemaName, tableName)
             val constraints = db.metaDAO.listConstraints(schemaName, tableName)
-            respond(TableDetail(table, columns, constraints))
+            val indexes = db.metaDAO.listIndexes(schemaName, tableName)
+            respond(TableDetail(table, columns, constraints, indexes))
         }
     }
 }
