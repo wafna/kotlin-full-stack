@@ -36,14 +36,14 @@ context(ServerContext)
 internal fun Route.api() {
     get("/schemas") {
         call.bracket {
-            val schemas = db.metaDAO.listSchemas()
+            val schemas = db.meta.listSchemas()
             respond(schemas)
         }
     }
     get("/tables/{schema}") {
         val schemaName = call.parameters["schema"]!!
         call.bracket {
-            val tables = db.metaDAO.listTables(schemaName)
+            val tables = db.meta.listTables(schemaName)
             respond(tables)
             ok()
         }
@@ -52,15 +52,15 @@ internal fun Route.api() {
         val schemaName = call.parameters["schema"]!!
         val tableName = call.parameters["table"]!!
         call.bracket {
-            val table = db.metaDAO.getTable(schemaName, tableName)
+            val table = db.meta.getTable(schemaName, tableName)
             if (null == table) {
                 notFound()
                 return@bracket
             }
-            val columns = db.metaDAO.listColumns(schemaName, tableName)
-            val constraints = db.metaDAO.listConstraints(schemaName, tableName)
+            val columns = db.meta.listColumns(schemaName, tableName)
+            val constraints = db.meta.listConstraints(schemaName, tableName)
                 .filter { ! it.constraintName.contains("_not_null") }
-            val indexes = db.metaDAO.listIndexes(schemaName, tableName)
+            val indexes = db.meta.listIndexes(schemaName, tableName)
             respond(TableDetail(table, columns, constraints, indexes))
         }
     }

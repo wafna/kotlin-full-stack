@@ -13,13 +13,13 @@ import wafna.dbexplorer.domain.Index
 fun createAppDB(dataSource: DataSource): AppDB {
     with(Database(dataSource)) {
         return object : AppDB {
-            override val metaDAO: MetaDAO = createMetaDAO()
+            override val meta: MetaDAO = createMetaDAO()
         }
     }
 }
 
 interface AppDB {
-    val metaDAO: MetaDAO
+    val meta: MetaDAO
 }
 
 interface MetaDAO {
