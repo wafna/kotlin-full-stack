@@ -87,19 +87,6 @@ val App = FC<Props> {
             }
         }
 
-//        Row {
-//            Col {
-//                scale = ColumnScale.Large
-//                size = 12
-//                NavBar {
-//                    h.a {
-//                        className = ClassName("navbar-brand")
-//                        href = SchemasRoute.defaultHash().href
-//                        +"Schemas"
-//                    }
-//                }
-//            }
-//        }
         h.br()
         Row {
             Col {

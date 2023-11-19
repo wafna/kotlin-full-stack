@@ -60,10 +60,12 @@ internal fun Route.api() {
                     return@bracket
                 }
                 val columns = db.meta.listColumns(schemaName, tableName)
-                val constraints = db.meta.listConstraints(schemaName, tableName)
+                val tableConstraints = db.meta.listTableConstraints(schemaName, tableName)
                     .filter { ! it.constraintName.contains("_not_null") }
+                val foreignKeys = db.meta.listForeignKeys(schemaName, tableName)
+                val foreignKeyRefs = db.meta.listForeignKeyRefs(schemaName, tableName)
                 val indexes = db.meta.listIndexes(schemaName, tableName)
-                respond(TableDetail(table, columns, constraints, indexes))
+                respond(TableDetail(table, columns, tableConstraints, foreignKeys, foreignKeyRefs, indexes))
             }
         }
     }

@@ -1,6 +1,6 @@
 package wafna.dbexplorer.domain
 
-data class Constraint(
+data class TableConstraint(
     val constraintCatalog: String,
     val constraintSchema: String,
     val constraintName: String,

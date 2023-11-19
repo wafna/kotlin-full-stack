@@ -2,16 +2,16 @@ package wafna.dbexplorer.db.marshallers
 
 import java.sql.ResultSet
 import wafna.dbexplorer.db.Marshaller
-import wafna.dbexplorer.domain.Constraint
+import wafna.dbexplorer.domain.TableConstraint
 
-val constraintMarshaller = object : Marshaller<Constraint>() {
+val tableConstraintMarshaller = object : Marshaller<TableConstraint>() {
     override val fields: List<String> = listOf(
         "constraint_catalog", "constraint_schema", "constraint_name", "table_catalog", "table_schema", "table_name",
         "constraint_type", "is_deferrable", "initially_deferred", "enforced", "nulls_distinct"
     )
 
-    override fun read(resultSet: ResultSet): Constraint = resultSet.run {
-        Constraint(
+    override fun read(resultSet: ResultSet): TableConstraint = resultSet.run {
+        TableConstraint(
             constraintCatalog = getString("constraint_catalog"),
             constraintSchema = getString("constraint_schema"),
             constraintName = getString("constraint_name"),

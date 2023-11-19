@@ -87,10 +87,50 @@ val TableDetailView = FC<TableDetailProps> { props ->
                     }
                 }
                 h.tbody {
-                    tableDetail!!.constraints.forEach { column ->
+                    tableDetail!!.tableConstraints.forEach { column ->
                         h.tr {
                             h.td { h.pre { +column.constraintName } }
                             h.td { h.pre { +column.constraintType } }
+                        }
+                    }
+                }
+            }
+            h.h4 { +"Foreign Keys" }
+            h.table {
+                className = ClassName("table table-lg")
+                h.thead {
+                    h.tr {
+                        h.th { h.span { +"Name" } }
+                        h.th { h.span { +"Column" } }
+                        h.th { h.span { +"Target" } }
+                    }
+                }
+                h.tbody {
+                    tableDetail!!.foreignKeys.forEach { fk ->
+                        h.tr {
+                            h.td { h.pre { +fk.constraintName } }
+                            h.td { h.pre { +"${fk.schemaName}.${fk.tableName}.${fk.columnName}" } }
+                            h.td { h.pre { +"${fk.foreignSchemaName}.${fk.foreignTableName}.${fk.foreignColumnName}" } }
+                        }
+                    }
+                }
+            }
+            h.h4 { +"References" }
+            h.table {
+                className = ClassName("table table-lg")
+                h.thead {
+                    h.tr {
+                        h.th { h.span { +"Name" } }
+                        h.th { h.span { +"Column" } }
+                        h.th { h.span { +"Target" } }
+                    }
+                }
+                h.tbody {
+                    tableDetail!!.foreignKeyRefs.forEach { fk ->
+                        h.tr {
+                            h.td { h.pre { +fk.constraintName } }
+                            h.td { h.pre { +"${fk.schemaName}.${fk.tableName}.${fk.columnName}" } }
+                            h.td { h.pre { +"${fk.foreignSchemaName}.${fk.foreignTableName}.${fk.foreignColumnName}" } }
                         }
                     }
                 }
