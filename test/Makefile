@@ -3,18 +3,6 @@ export
 
 FORCE: ;
 
-CONTAINER_ID := $(shell docker ps -a | grep "${CONTAINER_NAME}" | cut -d' ' -f1)
-
-env: FORCE
-	@echo ${APP_NAME}
-	@echo ${IMAGE_NAME}
-	@echo ${CONTAINER_NAME}
-	@echo ${NETWORK_NAME}
-	@echo ${POSTGRES_DB}
-	@echo ${POSTGRES_USER}
-	@echo ${POSTGRES_PASSWORD}
-
-
 images: FORCE
 	@docker images
 
@@ -32,24 +20,19 @@ start: FORCE
 		-d "${IMAGE_NAME}"
 
 stop: FORCE
-	@([ -z "${CONTAINER_ID}" ] && echo "Container not found.") || \
-		docker kill "${CONTAINER_ID}"
+	@docker kill "${CONTAINER_NAME}"
 
 ps: FORCE
 	@docker ps -a
 
 rm: FORCE
-	@([ -z "${CONTAINER_ID}" ] && echo "Container not found.") || \
-		docker rm "${CONTAINER_ID}"
+	@docker rm "${CONTAINER_NAME}"
 
-exec: FORCE
-	@([ -z "${CONTAINER_ID}" ] && echo "Container not found.") || \
-		docker run -it "${IMAGE_NAME}" psql -h localhost -U "${POSTGRES_USER}" "${POSTGRES_DB}"
+portal: FORCE
+	@docker exec -it ${CONTAINER_NAME} psql -U "${POSTGRES_USER}" "${POSTGRES_DB}"
 
 psql: FORCE
-	@([ -z "${CONTAINER_ID}" ] && echo "Container not found.") || \
-		psql -h localhost -U "${POSTGRES_USER}" "${POSTGRES_DB}"
+	@psql -h localhost -U "${POSTGRES_USER}" "${POSTGRES_DB}"
 
 log: FORCE
-	@([ -z "${CONTAINER_ID}" ] && echo "Container not found.") || \
-		docker logs "${CONTAINER_ID}"
+	@docker logs "${CONTAINER_ID}"
