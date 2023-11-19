@@ -13,12 +13,12 @@ import wafna.dbexplorer.util.LazyLogger
 
 private val log = LazyLogger(App::class)
 
-class App : CliktCommand() {
+internal class App : CliktCommand() {
     private val config: File by argument().file(mustExist = true).help("The config file to use.")
     override fun run() = runApp(config)
 }
 
-fun runApp(configFile: File): Unit = runBlocking {
+internal fun runApp(configFile: File): Unit = runBlocking {
     Runtime.getRuntime().addShutdownHook(object : Thread() {
         override fun run() {
             log.warn { "Shutting down." }
@@ -27,7 +27,10 @@ fun runApp(configFile: File): Unit = runBlocking {
 
     val appConfig = ConfigLoaderBuilder.default()
         .addFileSource(configFile)
-        .addPropertySource(EnvironmentVariablesPropertySource(false, false))
+        .addPropertySource(EnvironmentVariablesPropertySource(
+            useUnderscoresAsSeparator = false,
+            allowUppercaseNames = false
+        ))
         .build()
         .loadConfigOrThrow<AppConfig>()
 
