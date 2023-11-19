@@ -2,7 +2,7 @@ version: '3'
 services:
   postgres:
     container_name: test_db
-    image: postgres
+    image: postgres:15-alpine
     restart: always
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
@@ -12,9 +12,13 @@ services:
       - POSTGRES_DB=test_db
   flyway:
     container_name: flyway
-    image: flyway/flyway:latest
-#    command: -configFiles=/flyway/conf/flyway.config -locations=filesystem:/flyway/sql -connectRetries=60 migrate
-    command: "-locations=filesystem:/flyway/sql -connectRetries=3 -url=jdbc:postgresql://test_db:5432/test_db -schemas=public -user=username -password=password migrate"
+    image: flyway/flyway:10.0.1-alpine
+    command: "-locations=filesystem:/flyway/sql -connectRetries=3 migrate"
+    environment:
+      - FLYWAY_USER=username
+      - FLYWAY_PASSWORD=password
+      - FLYWAY_URL=jdbc:postgresql://test_db:5432/test_db
+      - FLYWAY_SCHEMAS=flyway,${POSTGRES_SCHEMA:-widgets}
     volumes:
       - ${PWD}/sql_versions:/flyway/sql
       - ${PWD}/docker-flyway.config:/flyway/conf/flyway.config
