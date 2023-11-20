@@ -3,3 +3,4 @@
 **/.gradle/
 **/build/
 **/kotlin-js-store/
+**/nohup.out
