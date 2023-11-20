@@ -1,9 +1,9 @@
-env: dev
+env: demo
 
 database:
-  jdbcUrl: "${JDBC_URL}"
-  username: "${JDBC_USERNAME}"
-  password: "${JDBC_PASSWORD}"
+  jdbcUrl: "jdbc:postgresql://demo_pg:5432/demo"
+  username: "username"
+  password: "password"
   maximumPoolSize: 1
 
 server:

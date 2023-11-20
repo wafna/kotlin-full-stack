@@ -1,25 +1,25 @@
 version: '3'
 services:
   postgres:
-    container_name: test_db
+    container_name: demo_pg
     image: postgres:15-alpine
     restart: always
     ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      - "5432:5432"
     environment:
       - POSTGRES_USER=username
       - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=test_db
+      - POSTGRES_DB=demo
   flyway:
-    container_name: flyway
+    container_name: demo_flyway
     image: flyway/flyway:10-alpine
     command: "-locations=filesystem:/flyway/sql -connectRetries=3 migrate"
     environment:
       - FLYWAY_USER=username
       - FLYWAY_PASSWORD=password
-      - FLYWAY_URL=jdbc:postgresql://test_db:5432/test_db
+      - FLYWAY_URL=jdbc:postgresql://demo_pg:5432/demo
       - FLYWAY_SCHEMAS=flyway
     volumes:
-      - ./flyway/sql:/flyway/sql
+      - ./flyway:/flyway/sql
     depends_on:
       - postgres
