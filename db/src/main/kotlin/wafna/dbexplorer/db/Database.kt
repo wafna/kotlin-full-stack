@@ -6,7 +6,7 @@ import java.sql.ResultSet
 import javax.sql.DataSource
 
 class Database(private val dataSource: DataSource) {
-    suspend fun <T> withConnection(borrow: suspend Connection.() -> T) =
+    private suspend fun <T> withConnection(borrow: suspend Connection.() -> T) =
         dataSource.connection.use { it.borrow() }
 
     suspend fun <T> select(sql: String, vararg params: Any, reader: suspend (ResultSet) -> T): List<T> =

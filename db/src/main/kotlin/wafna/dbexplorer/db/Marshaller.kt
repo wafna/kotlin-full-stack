@@ -8,10 +8,6 @@ import java.sql.ResultSet
 abstract class Marshaller<T> {
     abstract val fields: List<String>
     abstract fun read(resultSet: ResultSet): T
-
-    operator fun invoke(resultSet: ResultSet): T = read(resultSet)
-    operator fun invoke(prefix: String? = null): String = project(prefix)
-
     fun project(prefix: String? = null): String = when {
         prefix.isNullOrBlank() -> fields
         else -> fields.map { "$prefix.$it" }
