@@ -13,23 +13,7 @@ typealias Params = Map<String, String>
 data class HashRoute(val path: String, val params: Params = mapOf()) {
     constructor(path: String, vararg params: Pair<String, String>) : this(path, mapOf(*params))
 
-    /**
-     * For anchors.
-     */
-    val href = buildString {
-        append("#")
-        append(path)
-        if (params.isNotEmpty()) {
-            append("?")
-            var sep = false
-            for (param in params) {
-                if (sep) append("&") else sep = true
-                append(param.key)
-                append("=")
-                append(param.value)
-            }
-        }
-    }
+    val href = makeURL("#", path, *params.toList().toTypedArray())
 
     fun goto() {
         window.location.hash = href

@@ -38,3 +38,18 @@ fun withTargetValue(block: (String) -> Unit): (ChangeEvent<HTMLInputElement>) ->
 // By allowing nulls we can conditionally inline CSS classes.
 fun classNames(vararg className: String?): ClassName =
     ClassName(className.filterNotNull().joinToString(" "))
+
+fun makeURL(apiRoot: String, path: String, vararg params: Pair<String, String>): String = buildString {
+    append(apiRoot)
+    append(path)
+    if (params.isNotEmpty()) {
+        append("?")
+        var sep = false
+        for (param in params) {
+            if (sep) append("&") else sep = true
+            append(param.first)
+            append("=")
+            append(param.second)
+        }
+    }
+}
