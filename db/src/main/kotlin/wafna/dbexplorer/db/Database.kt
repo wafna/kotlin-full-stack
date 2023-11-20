@@ -1,5 +1,6 @@
 package wafna.dbexplorer.db
 
+import wafna.dbexplorer.util.LazyLogger
 import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet
@@ -18,6 +19,16 @@ class Database(private val dataSource: DataSource) {
                 readRecords { reader(it) }
             }
         }
+}
+
+context(Database)
+suspend fun <T> LazyLogger.selectLogged(
+    sql: String,
+    vararg params: Any,
+    reader: suspend (ResultSet) -> T
+): List<T> {
+    debug { "SQL\n$sql" }
+    return select(sql, *params) { reader(it) }
 }
 
 suspend fun <T> Connection.withStatement(sql: String, borrow: suspend PreparedStatement.() -> T) =
