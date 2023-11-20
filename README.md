@@ -2,24 +2,11 @@
 
 A server that provides a web interface to explore a database.
 
-## Demo
+## Sub-projects
 
-Contains a demo Postgres database in docker and a config file to use with the server.
-
-<small>***nb*** Requires docker and docker-compose, may require `sudo`.</small>
-
-* Run the demo:
-```bash
-make -C demo run
-```
-This can be run repeatedly; there is no need to stop it, first.
-
-* Run psql on the database server:
-```bash
-make -C demo psql
-```
-
-* Stop the demo, destroy the containers:
-```bash
-make -C demo stop
-```
+* [domain](./domain/README.md) - The domain model.
+* [db](./db/README.md) - Database access.
+* [server](./server/README.md) - The HTTP API server.
+* [browser](./browser/README.md) - The web application.
+* [demo](./demo/README.md) - A small database for demonstrating the database.
+* [test](./test/README.md) - Future integration tests and shared code for unit testing.
