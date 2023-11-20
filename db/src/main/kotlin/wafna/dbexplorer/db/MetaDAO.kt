@@ -79,30 +79,24 @@ internal fun createMetaDAO() = object : MetaDAO {
     ) { indexMarshaller.read(it) }
 
     override suspend fun listForeignKeys(schemaName: String, tableName: String) = selectLogged(
-        """SELECT
-        |    tc.table_schema, 
-        |    tc.table_name, 
-        |    tc.constraint_name, 
-        |    kcu.column_name, 
-        |    ccu.table_schema AS foreign_table_schema,
-        |    ccu.table_name AS foreign_table_name,
-        |    ccu.column_name AS foreign_column_name 
-        |FROM information_schema.table_constraints AS tc 
-        |JOIN information_schema.key_column_usage AS kcu
-        |    ON tc.constraint_name = kcu.constraint_name
-        |    AND tc.table_schema = kcu.table_schema
-        |JOIN information_schema.constraint_column_usage AS ccu
-        |    ON ccu.constraint_name = tc.constraint_name
-        |WHERE tc.constraint_type = 'FOREIGN KEY'
-        |    AND tc.table_schema = ?
-        |    AND tc.table_name = ?
-        """.trimMargin(),
+        foreignKeys(FKDirection.FROM),
         schemaName,
         tableName
     ) { foreignKeyMarshaller.read(it) }
 
     override suspend fun listForeignKeyRefs(schemaName: String, tableName: String) = selectLogged(
-        """SELECT
+        foreignKeys(FKDirection.TO),
+        schemaName,
+        tableName
+    ) { foreignKeyMarshaller.read(it) }
+}
+
+private enum class FKDirection(val tableName: String) {
+    FROM("tc"), TO("ccu")
+}
+
+private fun foreignKeys(dir: FKDirection) =
+    """SELECT
         |    tc.table_schema, 
         |    tc.table_name, 
         |    tc.constraint_name, 
@@ -117,10 +111,7 @@ internal fun createMetaDAO() = object : MetaDAO {
         |JOIN information_schema.constraint_column_usage AS ccu
         |    ON ccu.constraint_name = tc.constraint_name
         |WHERE tc.constraint_type = 'FOREIGN KEY'
-        |    AND ccu.table_schema = ?
-        |    AND ccu.table_name = ?
-        """.trimMargin(),
-        schemaName,
-        tableName
-    ) { foreignKeyMarshaller.read(it) }
-}
+        |    AND ${dir.tableName}.table_schema = ?
+        |    AND ${dir.tableName}.table_name = ?
+        """.trimMargin()
+
