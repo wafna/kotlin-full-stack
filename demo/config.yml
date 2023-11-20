@@ -1,4 +1,4 @@
-env: demo
+appEnv: demo
 
 database:
   jdbcUrl: "jdbc:postgresql://localhost:5432/demo"
