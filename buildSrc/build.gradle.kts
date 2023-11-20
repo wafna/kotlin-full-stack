@@ -13,6 +13,5 @@ kotlin {
 
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.21")
-    // common plugins
     implementation("org.jlleitschuh.gradle:ktlint-gradle:11.3.1")
 }
