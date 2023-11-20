@@ -1,5 +1,3 @@
-@file:Suppress("import-ordering")
-
 package wafna.dbexplorer.db
 
 import wafna.dbexplorer.db.marshallers.columnMarshaller
