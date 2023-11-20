@@ -2,6 +2,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     id("org.jetbrains.kotlin.jvm")
+    id ("org.jlleitschuh.gradle.ktlint")
 //    id("org.jmailen.kotlinter")
 }
 

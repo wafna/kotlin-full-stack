@@ -1,8 +1,8 @@
 package wafna.dbexplorer.db.marshallers
 
-import java.sql.ResultSet
 import wafna.dbexplorer.db.Marshaller
 import wafna.dbexplorer.domain.Table
+import java.sql.ResultSet
 
 val tableMarshaller = object : Marshaller<Table>() {
     override val fields: List<String> = listOf(
@@ -33,7 +33,7 @@ val tableMarshaller = object : Marshaller<Table>() {
             userDefinedTypeName = getString("user_defined_type_name"),
             isInsertableInto = getBoolean("is_insertable_into"),
             isTyped = getBoolean("is_typed"),
-            commitAction = getString("commit_action"),
+            commitAction = getString("commit_action")
         )
     }
 }

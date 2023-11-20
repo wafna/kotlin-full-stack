@@ -8,5 +8,5 @@ data class Column(
     val ordinalPosition: Int,
     val dataType: String,
     val columnDefault: String?,
-    val isNullable: Boolean,
+    val isNullable: Boolean
 )

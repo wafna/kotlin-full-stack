@@ -1,13 +1,19 @@
 package wafna.dbexplorer.db.marshallers
 
-import java.sql.ResultSet
 import wafna.dbexplorer.db.Marshaller
 import wafna.dbexplorer.domain.Column
+import java.sql.ResultSet
 
 val columnMarshaller = object : Marshaller<Column>() {
     override val fields: List<String> = listOf(
-        "table_catalog", "table_schema", "table_name", "column_name", "ordinal_position",
-        "data_type", "column_default", "is_nullable"
+        "table_catalog",
+        "table_schema",
+        "table_name",
+        "column_name",
+        "ordinal_position",
+        "data_type",
+        "column_default",
+        "is_nullable"
     )
 
     override fun read(resultSet: ResultSet): Column = resultSet.run {
@@ -19,7 +25,7 @@ val columnMarshaller = object : Marshaller<Column>() {
             ordinalPosition = getInt("ordinal_position"),
             dataType = getString("data_type"),
             columnDefault = getString("column_default"),
-            isNullable = getBoolean("is_nullable"),
+            isNullable = getBoolean("is_nullable")
         )
     }
 }

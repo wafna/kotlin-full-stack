@@ -1,8 +1,8 @@
 package wafna.dbexplorer.db.marshallers
 
-import java.sql.ResultSet
 import wafna.dbexplorer.db.Marshaller
 import wafna.dbexplorer.domain.TableConstraint
+import java.sql.ResultSet
 
 val tableConstraintMarshaller = object : Marshaller<TableConstraint>() {
     override val fields: List<String> = listOf(
@@ -22,7 +22,7 @@ val tableConstraintMarshaller = object : Marshaller<TableConstraint>() {
             isDeferrable = getBoolean("is_deferrable"),
             initiallyDeferred = getBoolean("initially_deferred"),
             enforced = getBoolean("enforced"),
-            nullsDistinct = getBoolean("nulls_distinct"),
+            nullsDistinct = getBoolean("nulls_distinct")
         )
     }
 }

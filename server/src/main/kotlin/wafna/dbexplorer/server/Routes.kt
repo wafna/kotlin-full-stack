@@ -41,7 +41,7 @@ internal fun Route.api() {
             respond(schemas)
         }
     }
-    route("/tables"){
+    route("/tables") {
         get("/{schema}") {
             val schemaName = call.parameters["schema"]!!
             call.bracket {
@@ -61,7 +61,7 @@ internal fun Route.api() {
                 }
                 val columns = db.meta.listColumns(schemaName, tableName)
                 val tableConstraints = db.meta.listTableConstraints(schemaName, tableName)
-                    .filter { ! it.constraintName.contains("_not_null") }
+                    .filter { !it.constraintName.contains("_not_null") }
                 val foreignKeys = db.meta.listForeignKeys(schemaName, tableName)
                 val foreignKeyRefs = db.meta.listForeignKeyRefs(schemaName, tableName)
                 val indexes = db.meta.listIndexes(schemaName, tableName)

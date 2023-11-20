@@ -11,5 +11,5 @@ data class TableConstraint(
     val isDeferrable: Boolean,
     val initiallyDeferred: Boolean,
     val enforced: Boolean,
-    val nullsDistinct: Boolean,
+    val nullsDistinct: Boolean
 )

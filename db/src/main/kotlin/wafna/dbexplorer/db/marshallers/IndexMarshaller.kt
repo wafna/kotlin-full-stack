@@ -1,12 +1,16 @@
 package wafna.dbexplorer.db.marshallers
 
-import java.sql.ResultSet
 import wafna.dbexplorer.db.Marshaller
 import wafna.dbexplorer.domain.Index
+import java.sql.ResultSet
 
 val indexMarshaller = object : Marshaller<Index>() {
     override val fields: List<String> = listOf(
-        "schemaname", "tablename", "indexname", "tablespace", "indexdef"
+        "schemaname",
+        "tablename",
+        "indexname",
+        "tablespace",
+        "indexdef"
     )
 
     override fun read(resultSet: ResultSet): Index = resultSet.run {
@@ -15,7 +19,7 @@ val indexMarshaller = object : Marshaller<Index>() {
             tableName = getString("tablename"),
             indexName = getString("indexname"),
             tableSpace = getString("tablespace"),
-            indexDef = getString("indexdef"),
+            indexDef = getString("indexdef")
         )
     }
 }

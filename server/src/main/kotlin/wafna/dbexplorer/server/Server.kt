@@ -19,12 +19,12 @@ import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.plugins.cors.routing.CORS
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
-import java.io.File
-import java.lang.reflect.Type
-import java.util.UUID
 import wafna.dbexplorer.db.AppDB
 import wafna.dbexplorer.db.createAppDB
 import wafna.dbexplorer.util.LazyLogger
+import java.io.File
+import java.lang.reflect.Type
+import java.util.UUID
 
 private object Server
 
@@ -95,12 +95,12 @@ private fun Application.installContentNegotiation() {
                     override fun deserialize(
                         json: JsonElement?,
                         typeOfT: Type?,
-                        context: JsonDeserializationContext?,
+                        context: JsonDeserializationContext?
                     ): UUID = Either.catch {
-                            json!!.asString.let { UUID.fromString(it) }
-                        }.onLeft { e ->
-                            throw IllegalArgumentException("Failed to serialize UUID from ${json?.asString}", e)
-                        }.getOrNull()!!
+                        json!!.asString.let { UUID.fromString(it) }
+                    }.onLeft { e ->
+                        throw IllegalArgumentException("Failed to serialize UUID from ${json?.asString}", e)
+                    }.getOrNull()!!
                 }
             )
         }

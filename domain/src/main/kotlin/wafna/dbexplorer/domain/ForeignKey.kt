@@ -7,5 +7,5 @@ data class ForeignKey(
     val columnName: String,
     val foreignSchemaName: String,
     val foreignTableName: String,
-    val foreignColumnName: String,
+    val foreignColumnName: String
 )

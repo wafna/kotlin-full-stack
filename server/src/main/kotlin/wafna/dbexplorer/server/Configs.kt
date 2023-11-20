@@ -12,4 +12,3 @@ fun appConfig(configFile: File) = ConfigLoaderBuilder.default()
     .addFileSource(configFile)
     .build()
     .loadConfigOrThrow<AppConfig>()
-

@@ -3,11 +3,11 @@ FORCE: ;
 test: FORCE
 	@./gradlew test
 
-build: FORCE
-	@./gradlew formatKotlin clean build --warning-mode all
+build: spiff
+	@./gradlew clean build --warning-mode all
 
 spiff: FORCE
-	@./gradlew formatKotlin lintKotlin detekt
+	@./gradlew ktlintFormat ktlintCheck detekt
 
 yarn: FORCE
 	@./gradlew kotlinUpgradeYarnLock

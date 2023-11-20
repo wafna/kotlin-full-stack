@@ -1,13 +1,18 @@
 package wafna.dbexplorer.db.marshallers
 
-import java.sql.ResultSet
 import wafna.dbexplorer.db.Marshaller
 import wafna.dbexplorer.domain.Schema
+import java.sql.ResultSet
 
 val schemaMarshaller = object : Marshaller<Schema>() {
     override val fields: List<String> = listOf(
-        "catalog_name", "schema_name", "schema_owner", "default_character_set_catalog", "default_character_set_schema",
-        "default_character_set_name", "sql_path"
+        "catalog_name",
+        "schema_name",
+        "schema_owner",
+        "default_character_set_catalog",
+        "default_character_set_schema",
+        "default_character_set_name",
+        "sql_path"
     )
 
     override fun read(resultSet: ResultSet): Schema = resultSet.run {

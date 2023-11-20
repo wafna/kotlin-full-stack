@@ -1,8 +1,8 @@
 package wafna.dbexplorer.db.marshallers
 
-import java.sql.ResultSet
 import wafna.dbexplorer.db.Marshaller
 import wafna.dbexplorer.domain.View
+import java.sql.ResultSet
 
 val viewMarshaller = object : Marshaller<View>() {
     override val fields: List<String> = listOf(
@@ -21,7 +21,7 @@ val viewMarshaller = object : Marshaller<View>() {
             isInsertableInto = getBoolean("is_insertable_into"),
             isTriggerUpdatable = getBoolean("is_trigger_updatable"),
             isTriggerDeletable = getBoolean("is_trigger_deletable"),
-            isTriggerInsertableInto = getBoolean("is_trigger_insertable_into"),
+            isTriggerInsertableInto = getBoolean("is_trigger_insertable_into")
         )
     }
 }

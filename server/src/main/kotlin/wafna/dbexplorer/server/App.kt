@@ -4,12 +4,9 @@ import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.help
 import com.github.ajalt.clikt.parameters.types.file
-import com.sksamuel.hoplite.ConfigLoaderBuilder
-import com.sksamuel.hoplite.addFileSource
-import com.sksamuel.hoplite.sources.EnvironmentVariablesPropertySource
-import java.io.File
 import kotlinx.coroutines.runBlocking
 import wafna.dbexplorer.util.LazyLogger
+import java.io.File
 
 private val log = LazyLogger(App::class)
 
