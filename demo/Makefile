@@ -7,8 +7,8 @@ psql: FORCE
 	@docker exec -it ${DB_CONTAINER_NAME} psql -U "${POSTGRES_USER}" "${POSTGRES_DB}"
 
 stop: FORCE
-	@./bin/destroy-container.sh "${DB_CONTAINER_NAME}"
-	@./bin/destroy-container.sh "${FLYWAY_CONTAINER_NAME}"
+	@docker rm -f "${DB_CONTAINER_NAME}"
+	@docker rm -f "${FLYWAY_CONTAINER_NAME}"
 
 run: stop
-	@docker-compose -f "./demo.yml" up -d
+	@docker-compose -f "./demo.yml" up -d &
