@@ -25,14 +25,7 @@ internal fun runApp(configFile: File): Unit = runBlocking {
         }
     })
 
-    val appConfig = ConfigLoaderBuilder.default()
-        .addFileSource(configFile)
-        .addPropertySource(EnvironmentVariablesPropertySource(
-            useUnderscoresAsSeparator = false,
-            allowUppercaseNames = false
-        ))
-        .build()
-        .loadConfigOrThrow<AppConfig>()
+    val appConfig = appConfig(configFile)
 
     runDB(appConfig.database) { appDB ->
         with(ServerContext(appDB)) {

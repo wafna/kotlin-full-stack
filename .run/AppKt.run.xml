@@ -1,13 +1,8 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="AppKt" type="JetRunConfigurationType" nameIsGenerated="true">
-    <envs>
-      <env name="POSTGRES_DB" value="test_db" />
-      <env name="POSTGRES_USER" value="username" />
-      <env name="POSTGRES_PASSWORD" value="password" />
-    </envs>
     <option name="MAIN_CLASS_NAME" value="wafna.dbexplorer.server.AppKt" />
     <module name="db-explorer.server.main" />
-    <option name="PROGRAM_PARAMETERS" value="configs/demo.yml" />
+    <option name="PROGRAM_PARAMETERS" value="demo/config.yml" />
     <shortenClasspath name="NONE" />
     <method v="2">
       <option name="Make" enabled="true" />

@@ -1,7 +1,7 @@
 env: demo
 
 database:
-  jdbcUrl: "jdbc:postgresql://demo_pg:5432/demo"
+  jdbcUrl: "jdbc:postgresql://localhost:5432/demo"
   username: "username"
   password: "password"
   maximumPoolSize: 1
