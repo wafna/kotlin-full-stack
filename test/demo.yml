@@ -12,15 +12,14 @@ services:
       - POSTGRES_DB=test_db
   flyway:
     container_name: flyway
-    image: flyway/flyway:10.0.1-alpine
+    image: flyway/flyway:10-alpine
     command: "-locations=filesystem:/flyway/sql -connectRetries=3 migrate"
     environment:
       - FLYWAY_USER=username
       - FLYWAY_PASSWORD=password
       - FLYWAY_URL=jdbc:postgresql://test_db:5432/test_db
-      - FLYWAY_SCHEMAS=flyway,${POSTGRES_SCHEMA:-widgets}
+      - FLYWAY_SCHEMAS=flyway
     volumes:
-      - ${PWD}/sql_versions:/flyway/sql
-      - ${PWD}/docker-flyway.config:/flyway/conf/flyway.config
+      - ./flyway/sql:/flyway/sql
     depends_on:
       - postgres

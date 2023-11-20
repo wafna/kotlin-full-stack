@@ -22,17 +22,20 @@ start: FORCE
 stop: FORCE
 	@docker kill "${CONTAINER_NAME}"
 
-ps: FORCE
-	@docker ps -a
-
 rm: FORCE
 	@docker rm "${CONTAINER_NAME}"
 
-portal: FORCE
-	@docker exec -it ${CONTAINER_NAME} psql -U "${POSTGRES_USER}" "${POSTGRES_DB}"
+# Remove all exited containers.
+clean: FORCE
+	@for DUD in $$(docker ps -a | grep Exited | cut -d" " -f1); do \
+		docker rm $${DUD}; \
+	done
 
 psql: FORCE
-	@psql -h localhost -U "${POSTGRES_USER}" "${POSTGRES_DB}"
+	@docker exec -it ${CONTAINER_NAME} psql -U "${POSTGRES_USER}" "${POSTGRES_DB}"
 
 log: FORCE
-	@docker logs "${CONTAINER_ID}"
+	@docker logs "${CONTAINER_NAME}"
+
+demo: stop rm clean
+	@docker-compose -f "./demo.yml" up -d
