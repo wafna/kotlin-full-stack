@@ -28,3 +28,9 @@ make -C ./demo psql
 ```bash
 make -C ./demo stop
 ```
+
+* View the logs on the database server or flyway, respectively.
+```bash
+make -C ./demo logs demo_pg
+make -C ./demo logs flyway
+```
