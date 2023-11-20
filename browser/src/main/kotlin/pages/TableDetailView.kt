@@ -33,8 +33,9 @@ val TableDetailView = FC<TableDetailProps> { props ->
     when (tableDetail) {
         null -> Loading
         else -> {
-            h.h3 { +"Table Detail" }
-            h.pre { +"${tableDetail!!.table.tableSchema}.${tableDetail!!.table.tableName}" }
+            h.h3 {
+                h.pre { +"${tableDetail!!.table.tableSchema}.${tableDetail!!.table.tableName}" }
+            }
             h.h4 { +"Columns" }
             Columns {
                 columns = tableDetail!!.columns
