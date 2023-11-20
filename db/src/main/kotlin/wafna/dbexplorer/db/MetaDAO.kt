@@ -56,18 +56,18 @@ internal fun createMetaDAO() = object : MetaDAO {
     ) { columnMarshaller.read(it) }
 
     override suspend fun listTableConstraints(schemaName: String, tableName: String) = log.selectLogged(
-        """SELECT ${tableConstraintMarshaller.project()}
-        |FROM information_schema.table_constraints
-        |WHERE table_schema = ? AND table_name = ?
+        """SELECT ${tableConstraintMarshaller.project("tcs")}
+        |FROM information_schema.table_constraints tcs
+        |WHERE tcs.table_schema = ? AND tcs.table_name = ?
         """.trimMargin(),
         schemaName,
         tableName
     ) { tableConstraintMarshaller.read(it) }
 
     override suspend fun listIndexes(schemaName: String, tableName: String) = log.selectLogged(
-        """SELECT ${indexMarshaller.project()}
-        |FROM pg_indexes
-        |WHERE schemaname = ? AND tablename = ?
+        """SELECT ${indexMarshaller.project("ixs")}
+        |FROM pg_indexes ixs
+        |WHERE ixs.schemaname = ? AND ixs.tablename = ?
         """.trimMargin(),
         schemaName,
         tableName
@@ -92,20 +92,20 @@ private enum class FKDirection(val tableName: String) {
 
 private fun foreignKeys(dir: FKDirection) =
     """SELECT
-        |    tc.table_schema, 
-        |    tc.table_name, 
-        |    tc.constraint_name, 
-        |    kcu.column_name, 
-        |    ccu.table_schema AS foreign_table_schema,
-        |    ccu.table_name AS foreign_table_name,
-        |    ccu.column_name AS foreign_column_name 
-        |FROM information_schema.table_constraints AS tc 
-        |JOIN information_schema.key_column_usage AS kcu
-        |    ON tc.constraint_name = kcu.constraint_name
-        |    AND tc.table_schema = kcu.table_schema
-        |JOIN information_schema.constraint_column_usage AS ccu
-        |    ON ccu.constraint_name = tc.constraint_name
-        |WHERE tc.constraint_type = 'FOREIGN KEY'
-        |    AND ${dir.tableName}.table_schema = ?
-        |    AND ${dir.tableName}.table_name = ?
+    |    tc.table_schema, 
+    |    tc.table_name, 
+    |    tc.constraint_name, 
+    |    kcu.column_name, 
+    |    ccu.table_schema AS foreign_table_schema,
+    |    ccu.table_name AS foreign_table_name,
+    |    ccu.column_name AS foreign_column_name 
+    |FROM information_schema.table_constraints AS tc 
+    |JOIN information_schema.key_column_usage AS kcu
+    |    ON tc.constraint_name = kcu.constraint_name
+    |    AND tc.table_schema = kcu.table_schema
+    |JOIN information_schema.constraint_column_usage AS ccu
+    |    ON ccu.constraint_name = tc.constraint_name
+    |WHERE tc.constraint_type = 'FOREIGN KEY'
+    |    AND ${dir.tableName}.table_schema = ?
+    |    AND ${dir.tableName}.table_name = ?
     """.trimMargin()
