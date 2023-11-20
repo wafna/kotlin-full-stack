@@ -9,6 +9,8 @@ import wafna.dbexplorer.domain.Schema
 import wafna.dbexplorer.domain.Table
 import wafna.dbexplorer.domain.TableConstraint
 import wafna.dbexplorer.domain.View
+import wafna.dbexplorer.util.LazyLogger
+import java.sql.ResultSet
 import javax.sql.DataSource
 
 fun createAppDB(dataSource: DataSource): AppDB {
@@ -17,6 +19,12 @@ fun createAppDB(dataSource: DataSource): AppDB {
             override val meta: MetaDAO = createMetaDAO()
         }
     }
+}
+
+context(Database)
+suspend fun <T> LazyLogger.selectLogged(sql: String, vararg params: Any, reader: suspend (ResultSet) -> T): List<T> {
+    debug { "SQL\n$sql" }
+    return select(sql, *params) { reader(it) }
 }
 
 interface AppDB {
