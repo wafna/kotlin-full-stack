@@ -18,14 +18,14 @@ import wafna.dbexplorer.domain.TableConstraint
 import wafna.dbexplorer.domain.View
 
 context (Database)
-internal fun createMetaDAO(): MetaDAO = object : MetaDAO {
+internal fun createMetaDAO() = object : MetaDAO {
     override suspend fun listSchemas(): List<Schema> = select(
         """SELECT ${schemaMarshaller()}
         |FROM information_schema.schemata
         """.trimMargin()
     ) { schemaMarshaller(it) }
 
-    override suspend fun listTables(schemaName: String): List<Table> = select(
+    override suspend fun listTables(schemaName: String) = select(
         """SELECT ${tableMarshaller()}
         |FROM information_schema.tables
         |WHERE table_schema = ?
@@ -33,7 +33,7 @@ internal fun createMetaDAO(): MetaDAO = object : MetaDAO {
         schemaName
     ) { tableMarshaller(it) }
 
-    override suspend fun getTable(schemaName: String, tableName: String): Table? = select(
+    override suspend fun getTable(schemaName: String, tableName: String) = select(
         """SELECT ${tableMarshaller()}
         |FROM information_schema.tables
         |WHERE table_schema = ?
@@ -43,7 +43,7 @@ internal fun createMetaDAO(): MetaDAO = object : MetaDAO {
         tableName
     ) { tableMarshaller(it) }.firstOrNull()
 
-    override suspend fun listViews(schemaName: String): List<View> = select(
+    override suspend fun listViews(schemaName: String) = select(
         """SELECT ${viewMarshaller()}
         |FROM information_schema.views
         |WHERE table_schema = ?
@@ -51,7 +51,7 @@ internal fun createMetaDAO(): MetaDAO = object : MetaDAO {
         schemaName
     ) { viewMarshaller(it) }
 
-    override suspend fun listColumns(schemaName: String, tableName: String): List<Column> = select(
+    override suspend fun listColumns(schemaName: String, tableName: String) = select(
         """SELECT ${columnMarshaller()}
             |FROM information_schema.columns
             |WHERE table_schema = ? AND table_name = ?
@@ -60,7 +60,7 @@ internal fun createMetaDAO(): MetaDAO = object : MetaDAO {
         tableName
     ) { columnMarshaller(it) }
 
-    override suspend fun listTableConstraints(schemaName: String, tableName: String): List<TableConstraint> = select(
+    override suspend fun listTableConstraints(schemaName: String, tableName: String) = select(
         """SELECT ${tableConstraintMarshaller()}
         |FROM information_schema.table_constraints
         |WHERE table_schema = ? AND table_name = ?
@@ -69,7 +69,7 @@ internal fun createMetaDAO(): MetaDAO = object : MetaDAO {
         tableName
     ) { tableConstraintMarshaller(it) }
 
-    override suspend fun listIndexes(schemaName: String, tableName: String): List<Index> = select(
+    override suspend fun listIndexes(schemaName: String, tableName: String) = select(
         """SELECT ${indexMarshaller()}
         |FROM pg_indexes
         |WHERE schemaname = ? AND tablename = ?
@@ -78,7 +78,7 @@ internal fun createMetaDAO(): MetaDAO = object : MetaDAO {
         tableName
     ) { indexMarshaller(it) }
 
-    override suspend fun listForeignKeys(schemaName: String, tableName: String): List<ForeignKey> = select(
+    override suspend fun listForeignKeys(schemaName: String, tableName: String) = select(
         """SELECT
         |    tc.table_schema, 
         |    tc.table_name, 
@@ -101,7 +101,7 @@ internal fun createMetaDAO(): MetaDAO = object : MetaDAO {
         tableName
     ) { foreignKeyMarshaller(it) }
 
-    override suspend fun listForeignKeyRefs(schemaName: String, tableName: String): List<ForeignKey> = select(
+    override suspend fun listForeignKeyRefs(schemaName: String, tableName: String) = select(
         """SELECT
         |    tc.table_schema, 
         |    tc.table_name, 
