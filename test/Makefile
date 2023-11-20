@@ -1,13 +1,7 @@
--include test.env
+-include ./demo.env
 export
 
 FORCE: ;
-
-images: FORCE
-	@docker images
-
-prune: FORCE
-	@docker system prune -a
 
 pull: FORCE
 	@docker pull "${IMAGE_NAME}"
@@ -19,23 +13,12 @@ start: FORCE
 		-e POSTGRES_PASSWORD="${POSTGRES_PASSWORD}" \
 		-d "${IMAGE_NAME}"
 
-stop: FORCE
-	@docker kill "${CONTAINER_NAME}"
-
-rm: FORCE
-	@docker rm "${CONTAINER_NAME}"
-
-# Remove all exited containers.
-clean: FORCE
-	@for DUD in $$(docker ps -a | grep Exited | cut -d" " -f1); do \
-		docker rm $${DUD}; \
-	done
-
 psql: FORCE
 	@docker exec -it ${CONTAINER_NAME} psql -U "${POSTGRES_USER}" "${POSTGRES_DB}"
 
-log: FORCE
-	@docker logs "${CONTAINER_NAME}"
-
-demo: stop rm clean
+demo: FORCE
+	@echo -n "Stopping ${CONTAINER_NAME}"
+	@docker kill "${CONTAINER_NAME}"
+	@echo -n "Removing ${CONTAINER_NAME}"
+	@docker rm "${CONTAINER_NAME}"
 	@docker-compose -f "./demo.yml" up -d
