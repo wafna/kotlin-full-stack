@@ -20,41 +20,41 @@ internal fun createMetaDAO() = object : MetaDAO {
     }
 
     override suspend fun listSchemas(): List<Schema> = selectLogged(
-        """SELECT ${schemaMarshaller.project()}
-        |FROM information_schema.schemata
+        """SELECT ${schemaMarshaller.project("ss")}
+        |FROM information_schema.schemata ss
         """.trimMargin()
     ) { schemaMarshaller.read(it) }
 
     override suspend fun listTables(schemaName: String) = selectLogged(
-        """SELECT ${tableMarshaller.project()}
-        |FROM information_schema.tables
-        |WHERE table_schema = ?
+        """SELECT ${tableMarshaller.project("ts")}
+        |FROM information_schema.tables ts
+        |WHERE ts.table_schema = ?
         """.trimMargin(),
         schemaName
     ) { tableMarshaller.read(it) }
 
     override suspend fun getTable(schemaName: String, tableName: String) = selectLogged(
-        """SELECT ${tableMarshaller.project()}
-        |FROM information_schema.tables
-        |WHERE table_schema = ?
-        |  AND table_name = ?
+        """SELECT ${tableMarshaller.project("ts")}
+        |FROM information_schema.tables ts
+        |WHERE ts.table_schema = ?
+        |  AND ts.table_name = ?
         """.trimMargin(),
         schemaName,
         tableName
     ) { tableMarshaller.read(it) }.firstOrNull()
 
     override suspend fun listViews(schemaName: String) = selectLogged(
-        """SELECT ${viewMarshaller.project()}
-        |FROM information_schema.views
-        |WHERE table_schema = ?
+        """SELECT ${viewMarshaller.project("vs")}
+        |FROM information_schema.views vs
+        |WHERE vs.table_schema = ?
         """.trimMargin(),
         schemaName
     ) { viewMarshaller.read(it) }
 
     override suspend fun listColumns(schemaName: String, tableName: String) = selectLogged(
-        """SELECT ${columnMarshaller.project()}
-            |FROM information_schema.columns
-            |WHERE table_schema = ? AND table_name = ?
+        """SELECT ${columnMarshaller.project("cs")}
+        |FROM information_schema.columns cs
+        |WHERE cs.table_schema = ? AND cs.table_name = ?
         """.trimMargin(),
         schemaName,
         tableName
