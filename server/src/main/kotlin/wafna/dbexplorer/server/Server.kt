@@ -48,7 +48,7 @@ internal suspend fun runDB(config: DatabaseConfig, callback: suspend (AppDB) -> 
 
 context(ServerContext)
 internal fun runServer(config: ServerConfig) {
-    applicationEngineEnvironment {
+    val environment = applicationEngineEnvironment {
         connector {
             port = config.port
             host = config.host
@@ -58,11 +58,10 @@ internal fun runServer(config: ServerConfig) {
             installContentNegotiation()
             installRoutes(File(config.static))
         }
-    }.let { environment ->
-        embeddedServer(Netty, environment).apply {
-            log.info { "Starting server at ${config.host}:${config.port}" }
-            start(true)
-        }
+    }
+    embeddedServer(Netty, environment).apply {
+        log.info { "Starting server at ${config.host}:${config.port}" }
+        start(wait = true)
     }
 }
 
@@ -73,13 +72,8 @@ private fun Application.installRoutes(staticDir: File) {
 
     routing {
         accessLog {
-            route("/api") {
-                api()
-            }
-            route("/") {
-                // https://ktor.io/docs/serving-static-content.html
-                staticFiles("/", staticDir)
-            }
+            route("/api") { api() }
+            route("/") { staticFiles(remotePath = "/", dir = staticDir) }
         }
     }
 }
