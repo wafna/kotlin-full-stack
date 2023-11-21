@@ -11,4 +11,4 @@ stop: FORCE
 	@docker rm -f "${FLYWAY_CONTAINER_NAME}"
 
 run: stop
-	@docker-compose -f "./demo.yml" up -d &
+	@docker-compose -f "./demo.yml" up -d

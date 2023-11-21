@@ -1,7 +1,7 @@
 appEnv: demo
 
 database:
-  jdbcUrl: "jdbc:postgresql://localhost:5432/demo"
+  jdbcUrl: "jdbc:postgresql://localhost:8687/demo"
   username: "username"
   password: "password"
   maximumPoolSize: 1
