@@ -11,7 +11,7 @@ object API {
         makeURL(apiRoot, path, *params)
 
     suspend fun listSchemas(): List<Schema> =
-        json(get(makeURL("schemas")))
+        json(get(makeURL("overview")))
 
     suspend fun listTables(schemaName: String): List<Table> =
         json(get(makeURL("tables/${schemaName}")))

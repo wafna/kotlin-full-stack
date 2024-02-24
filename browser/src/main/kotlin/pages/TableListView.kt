@@ -1,7 +1,7 @@
 package pages
 
 import API
-import TableDetailRoute
+import TableRoute
 import domain.Table
 import gridley.DisplayColumnPre
 import gridley.DisplayColumnStdHdr
@@ -19,7 +19,7 @@ external interface TableListProps : Props {
     var schemaName: String
 }
 
-val TableListView = FC<TableListProps> { props ->
+val SchemaView = FC<TableListProps> { props ->
     var tables: List<Table>? by useState(null)
 
     suspend fun updateList() {
@@ -50,7 +50,7 @@ val TableListView = FC<TableListProps> { props ->
                         override fun value(record: Table): String = record.tableName
                         override fun renderField(record: Table): FC<Props> = FC {
                             h.a {
-                                href = TableDetailRoute.makeHash(record.tableSchema, record.tableName).href
+                                href = TableRoute.makeHash(record.tableSchema, record.tableName).href
                                 h.pre { +record.tableName }
                             }
                         }

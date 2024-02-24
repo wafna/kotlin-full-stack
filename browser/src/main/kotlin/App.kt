@@ -1,8 +1,8 @@
 import kotlinx.browser.window
 import kotlinx.coroutines.launch
-import pages.SchemaListView
-import pages.TableDetailView
-import pages.TableListView
+import pages.OverviewView
+import pages.TableView
+import pages.SchemaView
 import react.FC
 import react.Props
 import react.useEffectOnce
@@ -19,9 +19,9 @@ import react.dom.html.ReactHTML as h
 
 // Routes.
 
-object SchemasRoute : Route {
-    override val routeId: String = "schemas"
-    override fun component(params: Params): FC<Props> = SchemaListView
+object OverviewRoute : Route {
+    override val routeId: String = "overview"
+    override fun component(params: Params): FC<Props> = OverviewView
 }
 
 enum class ParamNames(val value: String) {
@@ -31,10 +31,10 @@ enum class ParamNames(val value: String) {
     operator fun invoke(): String = value
 }
 
-object TablesRoute : Route {
-    override val routeId: String = "tables"
+object SchemaRoute : Route {
+    override val routeId: String = "schema"
     override fun component(params: Params): FC<Props> = FC {
-        TableListView {
+        SchemaView {
             schemaName = params[ParamNames.Schema()]!!
         }
     }
@@ -42,10 +42,10 @@ object TablesRoute : Route {
     fun makeHash(schemaName: String): HashRoute = HashRoute(routeId, mapOf(ParamNames.Schema() to schemaName))
 }
 
-object TableDetailRoute : Route {
-    override val routeId: String = "tableDetail"
+object TableRoute : Route {
+    override val routeId: String = "table"
     override fun component(params: Params): FC<Props> = FC {
-        TableDetailView {
+        TableView {
             schemaName = params[ParamNames.Schema()]!!
             tableName = params[ParamNames.Table()]!!
         }
@@ -55,7 +55,7 @@ object TableDetailRoute : Route {
         HashRoute(routeId, ParamNames.Schema() to schemaName, ParamNames.Table() to tableName)
 }
 
-val Routes = listOf(SchemasRoute, TablesRoute, TableDetailRoute)
+val Routes = listOf(OverviewRoute, SchemaRoute, TableRoute)
 
 // Main component.
 

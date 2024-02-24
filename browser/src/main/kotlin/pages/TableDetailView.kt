@@ -17,7 +17,7 @@ external interface TableDetailProps : Props {
     var tableName: String
 }
 
-val TableDetailView = FC<TableDetailProps> { props ->
+val TableView = FC<TableDetailProps> { props ->
     var tableDetail: TableDetail? by useState(null)
 
     suspend fun updateList() {
@@ -110,13 +110,13 @@ private val ForeignKeys = FC<ForeignKeysProps> { props ->
                     h.td { h.pre { +fk.constraintName } }
                     h.td {
                         h.a {
-                            href = TableDetailRoute.makeHash(fk.schemaName, fk.tableName).href
+                            href = TableRoute.makeHash(fk.schemaName, fk.tableName).href
                             h.pre { +"${fk.schemaName}.${fk.tableName}.${fk.columnName}" }
                         }
                     }
                     h.td {
                         h.a {
-                            href = TableDetailRoute.makeHash(fk.foreignSchemaName, fk.foreignTableName).href
+                            href = TableRoute.makeHash(fk.foreignSchemaName, fk.foreignTableName).href
                             h.pre { +"${fk.foreignSchemaName}.${fk.foreignTableName}.${fk.foreignColumnName}" }
                         }
                     }

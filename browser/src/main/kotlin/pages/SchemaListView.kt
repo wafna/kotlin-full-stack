@@ -1,7 +1,7 @@
 package pages
 
 import API
-import TablesRoute
+import SchemaRoute
 import domain.Schema
 import gridley.DisplayColumnPre
 import gridley.createGrid
@@ -17,7 +17,7 @@ import react.dom.html.ReactHTML as h
 /**
  * This is the nexus of the grid where all the bits are wired together.
  */
-val SchemaListView = FC<Props> {
+val OverviewView = FC<Props> {
 
     var schemas: List<Schema>? by useState(null)
 
@@ -45,7 +45,7 @@ val SchemaListView = FC<Props> {
                         override fun value(record: Schema): String = record.schemaName
                         override fun renderField(record: Schema): FC<Props> = FC {
                             h.a {
-                                href = TablesRoute.makeHash(record.schemaName).href
+                                href = SchemaRoute.makeHash(record.schemaName).href
                                 h.pre { +record.schemaName }
                             }
                         }
