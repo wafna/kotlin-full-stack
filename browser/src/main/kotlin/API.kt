@@ -14,8 +14,8 @@ object API {
         json(get(makeURL("overview")))
 
     suspend fun listTables(schemaName: String): List<Table> =
-        json(get(makeURL("tables/${schemaName}")))
+        json(get(makeURL("schema/${schemaName}")))
 
     suspend fun tableDetail(schemaName: String, tableName: String): TableDetail =
-        json(get(makeURL("tables/${schemaName}/${tableName}")))
+        json(get(makeURL("table/${schemaName}/${tableName}")))
 }
