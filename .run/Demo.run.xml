@@ -2,7 +2,7 @@
   <configuration default="false" name="Demo" type="JetRunConfigurationType">
     <option name="MAIN_CLASS_NAME" value="wafna.dbexplorer.server.AppKt" />
     <module name="db-explorer.server.main" />
-    <option name="PROGRAM_PARAMETERS" value="demo/config.yml" />
+    <option name="PROGRAM_PARAMETERS" value="--config=demo/config.yml" />
     <shortenClasspath name="NONE" />
     <method v="2">
       <option name="Make" enabled="true" />
