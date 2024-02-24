@@ -31,14 +31,14 @@ private object Server
 
 private val log = LazyLogger(Server::class)
 
+data class ServerContext(val db: AppDB)
+
 fun DatabaseConfig.hikariConfig() = HikariConfig().also {
     it.jdbcUrl = jdbcUrl
     it.username = username
     it.password = password
     it.maximumPoolSize = maximumPoolSize
 }
-
-data class ServerContext(val db: AppDB)
 
 internal suspend fun runDB(config: DatabaseConfig, callback: suspend (AppDB) -> Unit) {
     HikariDataSource(config.hikariConfig()).use { dataSource ->
