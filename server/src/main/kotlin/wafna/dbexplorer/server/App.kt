@@ -1,8 +1,10 @@
 package wafna.dbexplorer.server
 
 import com.github.ajalt.clikt.core.CliktCommand
-import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.help
+import com.github.ajalt.clikt.parameters.options.help
+import com.github.ajalt.clikt.parameters.options.option
+import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.file
 import kotlinx.coroutines.runBlocking
 import wafna.dbexplorer.util.LazyLogger
@@ -11,7 +13,11 @@ import java.io.File
 private val log = LazyLogger(App::class)
 
 internal class App : CliktCommand() {
-    private val config: File by argument().file(mustExist = true).help("The config file to use.")
+    private val config: File by option(envvar = "CONFIG_FILE")
+        .file(mustExist = true)
+        .help("The config file to use.")
+        .required()
+
     override fun run() = runApp(config)
 }
 

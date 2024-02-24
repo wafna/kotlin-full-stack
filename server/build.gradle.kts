@@ -26,7 +26,7 @@ dependencies {
 }
 
 application {
-    mainClass.set("wafna.dbexplorer.server.ServerKt")
+    mainClass.set("wafna.dbexplorer.server.AppKt")
 }
 
 // The production browser is bundled into the server distribution.

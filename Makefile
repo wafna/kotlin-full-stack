@@ -1,21 +1,26 @@
 FORCE: ;
 
-test: FORCE
-	@./gradlew test
-
-build: spiff
-	@./gradlew clean build --warning-mode all
+# Code.
 
 spiff: FORCE
 	@./gradlew ktlintFormat ktlintCheck detekt
 
-yarn: FORCE
-	@./gradlew kotlinUpgradeYarnLock
+test: FORCE
+	@./gradlew test
+
+rebuild: spiff
+	@./gradlew clean build --warning-mode all
 
 # Apps.
 
-server: FORCE
+# CONFIG_FILE=../demo/config.yml make run-server
+run-server: FORCE
 	@./gradlew :server:run
 
-browser: FORCE
+run-browser: FORCE
 	@./gradlew :browser:browserDevelopmentRun --continuous
+
+# Util.
+
+yarn: FORCE
+	@./gradlew kotlinUpgradeYarnLock
