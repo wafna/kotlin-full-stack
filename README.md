@@ -28,10 +28,25 @@ See the [demo](./demo/README.md) for more details.
 
 * Start the server.
 
-`CONFIG_FILE=../demo/config.yml make run-server`
+`CONFIG=../demo/config.yml make run-server`
 
 * Start the browser.
 
 Starts the browser in continuous update mode.
 
 `make run-browser`
+
+## Development
+
+* Start the database.
+
+See above.
+
+* Run the server in the IDE.
+
+Use `AppKt` as the main class.
+Supply an environmental configuration, as above, or use the `--config` command line option.
+
+* Run the browser.
+
+See above.

@@ -13,7 +13,7 @@ import java.io.File
 private val log = LazyLogger(App::class)
 
 internal class App : CliktCommand() {
-    private val config: File by option(envvar = "CONFIG_FILE")
+    private val config: File by option(envvar = "CONFIG")
         .file(mustExist = true)
         .help("The config file to use.")
         .required()
