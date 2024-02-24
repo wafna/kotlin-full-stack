@@ -3,6 +3,7 @@
 package wafna.dbexplorer.db
 
 import javax.sql.DataSource
+import wafna.database.Database
 import wafna.dbexplorer.domain.Column
 import wafna.dbexplorer.domain.ForeignKey
 import wafna.dbexplorer.domain.Index

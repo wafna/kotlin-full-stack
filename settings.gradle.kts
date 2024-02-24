@@ -13,6 +13,7 @@ pluginManagement {
 
 include(
     "util",
+    "database",
     "domain",
     "db",
     "server",

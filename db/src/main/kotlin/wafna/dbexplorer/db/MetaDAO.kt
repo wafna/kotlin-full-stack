@@ -1,5 +1,10 @@
 package wafna.dbexplorer.db
 
+import arrow.core.left
+import arrow.core.right
+import java.sql.ResultSet
+import java.util.concurrent.CancellationException
+import wafna.database.Database
 import wafna.dbexplorer.db.marshallers.columnMarshaller
 import wafna.dbexplorer.db.marshallers.foreignKeyMarshaller
 import wafna.dbexplorer.db.marshallers.indexMarshaller
@@ -14,6 +19,7 @@ import wafna.dbexplorer.domain.Schema
 import wafna.dbexplorer.domain.Table
 import wafna.dbexplorer.domain.TableConstraint
 import wafna.dbexplorer.domain.View
+import wafna.dbexplorer.domain.errors.DomainError
 import wafna.dbexplorer.domain.errors.DomainResult
 import wafna.dbexplorer.util.LazyLogger
 
@@ -138,3 +144,25 @@ private fun foreignKeys(dir: FKDirection) =
     |    AND ${dir.tableName}.table_schema = ?
     |    AND ${dir.tableName}.table_name = ?
     """.trimMargin()
+
+context(Database)
+internal suspend fun <T> LazyLogger.selectLogged(
+    sql: String,
+    vararg params: Any,
+    reader: suspend (ResultSet) -> T
+): List<T> {
+    debug { "SQL\n$sql" }
+    return select(sql, *params) { reader(it) }
+}
+
+/**
+ * Guards against throw exceptions and translates them to domain errors.
+ */
+internal suspend fun <T> trap(block: suspend () -> T): DomainResult<T> =
+    try {
+        block().right()
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: Throwable) {
+        DomainError.InternalServerError(e).left()
+    }

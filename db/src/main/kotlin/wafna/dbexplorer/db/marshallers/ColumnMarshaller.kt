@@ -1,6 +1,6 @@
 package wafna.dbexplorer.db.marshallers
 
-import wafna.dbexplorer.db.Marshaller
+import wafna.database.Marshaller
 import wafna.dbexplorer.domain.Column
 import java.sql.ResultSet
 

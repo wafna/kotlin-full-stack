@@ -1,4 +1,4 @@
-package wafna.dbexplorer.db
+package wafna.database
 
 import java.sql.ResultSet
 
