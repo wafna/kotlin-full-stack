@@ -35,7 +35,9 @@ val SchemaView = FC<TableListProps> { props ->
     when (tables) {
         null -> Loading
         else ->
-            (createGrid<Table>()) {
+            if (tables!!.isEmpty()) {
+                h.h3 { +"No tables found" }
+            } else (createGrid<Table>()) {
                 recordSet = tables!!
                 pageSize = 15
                 columns = listOf(
