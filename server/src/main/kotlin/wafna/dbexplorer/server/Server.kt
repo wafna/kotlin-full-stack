@@ -25,6 +25,7 @@ import wafna.dbexplorer.util.LazyLogger
 import java.io.File
 import java.lang.reflect.Type
 import java.util.UUID
+import wafna.dbexplorer.server.routes.api
 
 private object Server
 
