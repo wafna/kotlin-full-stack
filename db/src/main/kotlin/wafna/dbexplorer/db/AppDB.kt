@@ -2,6 +2,7 @@
 
 package wafna.dbexplorer.db
 
+import javax.sql.DataSource
 import wafna.dbexplorer.domain.Column
 import wafna.dbexplorer.domain.ForeignKey
 import wafna.dbexplorer.domain.Index
@@ -9,7 +10,6 @@ import wafna.dbexplorer.domain.Schema
 import wafna.dbexplorer.domain.Table
 import wafna.dbexplorer.domain.TableConstraint
 import wafna.dbexplorer.domain.View
-import javax.sql.DataSource
 import wafna.dbexplorer.domain.errors.DomainResult
 
 fun createAppDB(dataSource: DataSource): AppDB {
