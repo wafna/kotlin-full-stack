@@ -4,3 +4,4 @@
 **/build/
 **/kotlin-js-store/
 **/nohup.out
+**/.DS_Store
