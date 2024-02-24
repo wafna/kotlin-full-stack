@@ -24,15 +24,17 @@ internal fun createMetaDAO() = object : MetaDAO {
     override suspend fun listSchemas(): DomainResult<List<Schema>> = trap {
         log.selectLogged(
             """SELECT ${schemaMarshaller.project("ss")}
-        |FROM information_schema.schemata ss""".trimMargin()
+            |FROM information_schema.schemata ss
+            """.trimMargin()
         ) { schemaMarshaller.read(it) }
     }
 
     override suspend fun listTables(schemaName: String): DomainResult<List<Table>> = trap {
         log.selectLogged(
             """SELECT ${tableMarshaller.project("ts")}
-        |FROM information_schema.tables ts
-        |WHERE ts.table_schema = ?""".trimMargin(),
+            |FROM information_schema.tables ts
+            |WHERE ts.table_schema = ?
+            """.trimMargin(),
             schemaName
         ) { tableMarshaller.read(it) }
     }
@@ -40,9 +42,10 @@ internal fun createMetaDAO() = object : MetaDAO {
     override suspend fun getTable(schemaName: String, tableName: String): DomainResult<Table?> = trap {
         log.selectLogged(
             """SELECT ${tableMarshaller.project("ts")}
-        |FROM information_schema.tables ts
-        |WHERE ts.table_schema = ?
-        |  AND ts.table_name = ?""".trimMargin(),
+            |FROM information_schema.tables ts
+            |WHERE ts.table_schema = ?
+            |  AND ts.table_name = ?
+            """.trimMargin(),
             schemaName,
             tableName
         ) { tableMarshaller.read(it) }.firstOrNull()
@@ -51,8 +54,9 @@ internal fun createMetaDAO() = object : MetaDAO {
     override suspend fun listViews(schemaName: String): DomainResult<List<View>> = trap {
         log.selectLogged(
             """SELECT ${viewMarshaller.project("vs")}
-        |FROM information_schema.views vs
-        |WHERE vs.table_schema = ?""".trimMargin(),
+            |FROM information_schema.views vs
+            |WHERE vs.table_schema = ?
+            """.trimMargin(),
             schemaName
         ) { viewMarshaller.read(it) }
     }
@@ -60,8 +64,9 @@ internal fun createMetaDAO() = object : MetaDAO {
     override suspend fun listColumns(schemaName: String, tableName: String): DomainResult<List<Column>> = trap {
         log.selectLogged(
             """SELECT ${columnMarshaller.project("cs")}
-        |FROM information_schema.columns cs
-        |WHERE cs.table_schema = ? AND cs.table_name = ?""".trimMargin(),
+            |FROM information_schema.columns cs
+            |WHERE cs.table_schema = ? AND cs.table_name = ?
+            """.trimMargin(),
             schemaName,
             tableName
         ) { columnMarshaller.read(it) }
@@ -73,8 +78,9 @@ internal fun createMetaDAO() = object : MetaDAO {
     ): DomainResult<List<TableConstraint>> = trap {
         log.selectLogged(
             """SELECT ${tableConstraintMarshaller.project("tcs")}
-        |FROM information_schema.table_constraints tcs
-        |WHERE tcs.table_schema = ? AND tcs.table_name = ?""".trimMargin(),
+            |FROM information_schema.table_constraints tcs
+            |WHERE tcs.table_schema = ? AND tcs.table_name = ?
+            """.trimMargin(),
             schemaName,
             tableName
         ) { tableConstraintMarshaller.read(it) }
@@ -84,7 +90,8 @@ internal fun createMetaDAO() = object : MetaDAO {
         log.selectLogged(
             """SELECT ${indexMarshaller.project("ixs")}
             |FROM pg_indexes ixs
-            |WHERE ixs.schemaname = ? AND ixs.tablename = ?""".trimMargin(),
+            |WHERE ixs.schemaname = ? AND ixs.tablename = ?
+            """.trimMargin(),
             schemaName,
             tableName
         ) { indexMarshaller.read(it) }
@@ -129,4 +136,5 @@ private fun foreignKeys(dir: FKDirection) =
     |    ON ccu.constraint_name = tc.constraint_name
     |WHERE tc.constraint_type = 'FOREIGN KEY'
     |    AND ${dir.tableName}.table_schema = ?
-    |    AND ${dir.tableName}.table_name = ?""".trimMargin()
+    |    AND ${dir.tableName}.table_name = ?
+    """.trimMargin()

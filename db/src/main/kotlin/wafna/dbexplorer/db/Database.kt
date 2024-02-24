@@ -2,14 +2,14 @@ package wafna.dbexplorer.db
 
 import arrow.core.left
 import arrow.core.right
+import wafna.dbexplorer.domain.errors.DomainError
+import wafna.dbexplorer.domain.errors.DomainResult
+import wafna.dbexplorer.util.LazyLogger
 import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.util.concurrent.CancellationException
 import javax.sql.DataSource
-import wafna.dbexplorer.domain.errors.DomainError
-import wafna.dbexplorer.domain.errors.DomainResult
-import wafna.dbexplorer.util.LazyLogger
 
 class Database(private val dataSource: DataSource) {
     private suspend fun <T> withConnection(borrow: suspend Connection.() -> T) =
