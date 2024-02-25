@@ -5,7 +5,7 @@ import wafna.dbexplorer.domain.Schema
 import java.sql.ResultSet
 
 val schemaMarshaller = object : Marshaller<Schema>() {
-    override val fields: List<String> = listOf(
+    override val columnNames: List<String> = listOf(
         "catalog_name",
         "schema_name",
         "schema_owner",

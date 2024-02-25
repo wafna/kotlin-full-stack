@@ -5,7 +5,7 @@ import wafna.dbexplorer.domain.Index
 import java.sql.ResultSet
 
 val indexMarshaller = object : Marshaller<Index>() {
-    override val fields: List<String> = listOf(
+    override val columnNames: List<String> = listOf(
         "schemaname",
         "tablename",
         "indexname",

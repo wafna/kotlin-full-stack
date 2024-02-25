@@ -5,7 +5,7 @@ import wafna.dbexplorer.domain.View
 import java.sql.ResultSet
 
 val viewMarshaller = object : Marshaller<View>() {
-    override val fields: List<String> = listOf(
+    override val columnNames: List<String> = listOf(
         "table_catalog", "table_schema", "table_name", "view_definition", "check_option", "is_updatable",
         "is_insertable_into", "is_trigger_updatable", "is_trigger_deletable", "is_trigger_insertable_into"
     )

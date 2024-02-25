@@ -5,7 +5,7 @@ import wafna.dbexplorer.domain.TableConstraint
 import java.sql.ResultSet
 
 val tableConstraintMarshaller = object : Marshaller<TableConstraint>() {
-    override val fields: List<String> = listOf(
+    override val columnNames: List<String> = listOf(
         "constraint_catalog", "constraint_schema", "constraint_name", "table_catalog", "table_schema", "table_name",
         "constraint_type", "is_deferrable", "initially_deferred", "enforced", "nulls_distinct"
     )

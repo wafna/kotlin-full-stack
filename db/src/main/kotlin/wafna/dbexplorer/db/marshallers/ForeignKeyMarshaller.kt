@@ -4,7 +4,7 @@ import wafna.database.Marshaller
 import wafna.dbexplorer.domain.ForeignKey
 
 val foreignKeyMarshaller = object : Marshaller<ForeignKey>() {
-    override val fields: List<String> = listOf(
+    override val columnNames: List<String> = listOf(
         "table_schema",
         "constraint_name",
         "table_name",
