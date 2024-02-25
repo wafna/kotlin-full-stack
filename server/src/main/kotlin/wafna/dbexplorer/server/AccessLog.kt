@@ -25,7 +25,7 @@ fun Route.accessLog(callback: Route.() -> Unit): Route {
     })
     accessLogRoute.intercept(ApplicationCallPipeline.Plugins) {
         val elapsed = measureTimeMillis { proceed() }
-        accessLog.info { "${elapsed} ms ${call.request.httpMethod.value} ${call.request.uri}" }
+        accessLog.info { "$elapsed ms ${call.request.httpMethod.value} ${call.request.uri}" }
     }
     callback(accessLogRoute)
     return accessLogRoute

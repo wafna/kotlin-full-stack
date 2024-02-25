@@ -8,7 +8,7 @@ spiff: FORCE
 test: FORCE
 	@./gradlew test
 
-rebuild: spiff
+rebuild: FORCE
 	@./gradlew clean build --warning-mode all
 
 # Apps.

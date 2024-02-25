@@ -57,7 +57,8 @@ internal fun metaDAO() = object : MetaDao {
     }
 
     override suspend fun getTable(
-        schemaName: String, tableName: String
+        schemaName: String,
+        tableName: String
     ): DomainResult<Table?> = domainResult {
         select(
             tableMarshaller,
