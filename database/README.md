@@ -1,6 +1,6 @@
 # database
 
-An ORM for the domain based on `jdbc`.
+A minimal ORM based on `jdbc`.
 
 The `Database` class builds on a handful of functions for managing connections, statements, and result sets.
 
@@ -32,7 +32,17 @@ object UserMarshaller : Marshaller<User> {
 }
 ```
 
-Using a marshaller in a select requires invoking it's read method, thus:
+Use a marshaller in a select, thus:
+
+```kotlin
+context(Database)
+suspend fun listUsers(domainName: String): List<User> =
+    select(
+        UserMarshaller,
+        "SELECT id, name FROM users WHERE domain = ?",
+        domainName
+    )
+```
 
 For even more convenience, but at a run time penalty, a `GenericMarshaller` is provided to map a result set to a domain
 object using reflection.
