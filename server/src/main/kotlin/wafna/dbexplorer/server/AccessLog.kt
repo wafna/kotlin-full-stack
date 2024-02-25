@@ -9,6 +9,7 @@ import io.ktor.server.routing.RouteSelector
 import io.ktor.server.routing.RouteSelectorEvaluation
 import io.ktor.server.routing.RoutingResolveContext
 import wafna.dbexplorer.util.LazyLogger
+import kotlin.system.measureTimeMillis
 
 private object Access
 
@@ -17,14 +18,15 @@ private val accessLog = LazyLogger(Access::class)
 /**
  * Wrap this around a route to get a look at the activity on that route.
  */
-fun Route.accessLog(callback: Route.() -> Unit): Route =
-    createChild(object : RouteSelector() {
+fun Route.accessLog(callback: Route.() -> Unit): Route {
+    val accessLogRoute = createChild(object : RouteSelector() {
         override fun evaluate(context: RoutingResolveContext, segmentIndex: Int): RouteSelectorEvaluation =
             RouteSelectorEvaluation.Constant
-    }).also { accessLogRoute ->
-        accessLogRoute.intercept(ApplicationCallPipeline.Plugins) {
-            accessLog.info { "${call.request.httpMethod.value} ${call.request.uri}" }
-            proceed()
-        }
-        callback(accessLogRoute)
+    })
+    accessLogRoute.intercept(ApplicationCallPipeline.Plugins) {
+        val elapsed = measureTimeMillis { proceed() }
+        accessLog.info { "${elapsed} ms ${call.request.httpMethod.value} ${call.request.uri}" }
     }
+    callback(accessLogRoute)
+    return accessLogRoute
+}
