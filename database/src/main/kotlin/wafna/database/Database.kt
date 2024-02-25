@@ -18,6 +18,16 @@ class Database(private val dataSource: DataSource) {
                 readRecords { reader(it) }
             }
         }
+
+    suspend fun <T> select(marshaller: Marshaller<T>, sql: String, vararg params: Any): List<T> =
+        withConnection {
+            withStatement(sql) {
+                params.forEachIndexed { index, param ->
+                    setObject(index + 1, param)
+                }
+                readRecords { marshaller.read(it) }
+            }
+        }
 }
 
 private suspend fun <T> Connection.withStatement(sql: String, borrow: suspend PreparedStatement.() -> T) =

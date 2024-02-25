@@ -19,8 +19,8 @@ import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.plugins.cors.routing.CORS
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
-import wafna.dbexplorer.db.AppDB
-import wafna.dbexplorer.db.createAppDB
+import wafna.dbexplorer.db.AppDb
+import wafna.dbexplorer.db.createAppDb
 import wafna.dbexplorer.server.routes.api
 import wafna.dbexplorer.util.LazyLogger
 import java.io.File
@@ -31,7 +31,7 @@ private object Server
 
 private val log = LazyLogger(Server::class)
 
-data class ServerContext(val db: AppDB)
+data class ServerContext(val db: AppDb)
 
 fun DatabaseConfig.hikariConfig() = HikariConfig().also {
     it.jdbcUrl = jdbcUrl
@@ -40,9 +40,9 @@ fun DatabaseConfig.hikariConfig() = HikariConfig().also {
     it.maximumPoolSize = maximumPoolSize
 }
 
-internal suspend fun runDB(config: DatabaseConfig, callback: suspend (AppDB) -> Unit) {
+internal suspend fun runDB(config: DatabaseConfig, callback: suspend (AppDb) -> Unit) {
     HikariDataSource(config.hikariConfig()).use { dataSource ->
-        val appDB = createAppDB(dataSource)
+        val appDB = createAppDb(dataSource)
         callback(appDB)
     }
 }

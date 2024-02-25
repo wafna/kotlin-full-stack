@@ -1,9 +1,5 @@
 package wafna.dbexplorer.db
 
-import arrow.core.left
-import arrow.core.right
-import java.sql.ResultSet
-import java.util.concurrent.CancellationException
 import wafna.database.Database
 import wafna.dbexplorer.db.marshallers.columnMarshaller
 import wafna.dbexplorer.db.marshallers.foreignKeyMarshaller
@@ -19,34 +15,52 @@ import wafna.dbexplorer.domain.Schema
 import wafna.dbexplorer.domain.Table
 import wafna.dbexplorer.domain.TableConstraint
 import wafna.dbexplorer.domain.View
-import wafna.dbexplorer.domain.errors.DomainError
 import wafna.dbexplorer.domain.errors.DomainResult
 import wafna.dbexplorer.util.LazyLogger
 
-private val log = LazyLogger(MetaDAO::class)
+private val log = LazyLogger(MetaDao::class)
+
+interface MetaDao {
+    suspend fun listSchemas(): DomainResult<List<Schema>>
+    suspend fun listTables(schemaName: String): DomainResult<List<Table>>
+    suspend fun getTable(schemaName: String, tableName: String): DomainResult<Table?>
+    suspend fun listViews(schemaName: String): DomainResult<List<View>>
+    suspend fun listColumns(schemaName: String, tableName: String): DomainResult<List<Column>>
+    suspend fun listTableConstraints(schemaName: String, tableName: String): DomainResult<List<TableConstraint>>
+    suspend fun listIndexes(schemaName: String, tableName: String): DomainResult<List<Index>>
+    suspend fun listForeignKeys(schemaName: String, tableName: String): DomainResult<List<ForeignKey>>
+    suspend fun listForeignKeyRefs(schemaName: String, tableName: String): DomainResult<List<ForeignKey>>
+}
 
 context (Database)
-internal fun createMetaDAO() = object : MetaDAO {
-    override suspend fun listSchemas(): DomainResult<List<Schema>> = trap {
-        log.selectLogged(
+internal fun createMetaDAO() = object : MetaDao {
+    override suspend fun listSchemas(): DomainResult<List<Schema>> = domainResult {
+        select(
+            schemaMarshaller,
             """SELECT ${schemaMarshaller.project("ss")}
             |FROM information_schema.schemata ss
             """.trimMargin()
-        ) { schemaMarshaller.read(it) }
+        )
     }
 
-    override suspend fun listTables(schemaName: String): DomainResult<List<Table>> = trap {
-        log.selectLogged(
+    override suspend fun listTables(
+        schemaName: String
+    ): DomainResult<List<Table>> = domainResult {
+        select(
+            tableMarshaller,
             """SELECT ${tableMarshaller.project("ts")}
             |FROM information_schema.tables ts
             |WHERE ts.table_schema = ?
             """.trimMargin(),
             schemaName
-        ) { tableMarshaller.read(it) }
+        )
     }
 
-    override suspend fun getTable(schemaName: String, tableName: String): DomainResult<Table?> = trap {
-        log.selectLogged(
+    override suspend fun getTable(
+        schemaName: String, tableName: String
+    ): DomainResult<Table?> = domainResult {
+        select(
+            tableMarshaller,
             """SELECT ${tableMarshaller.project("ts")}
             |FROM information_schema.tables ts
             |WHERE ts.table_schema = ?
@@ -54,71 +68,90 @@ internal fun createMetaDAO() = object : MetaDAO {
             """.trimMargin(),
             schemaName,
             tableName
-        ) { tableMarshaller.read(it) }.firstOrNull()
+        ).firstOrNull()
     }
 
-    override suspend fun listViews(schemaName: String): DomainResult<List<View>> = trap {
-        log.selectLogged(
+    override suspend fun listViews(
+        schemaName: String
+    ): DomainResult<List<View>> = domainResult {
+        select(
+            viewMarshaller,
             """SELECT ${viewMarshaller.project("vs")}
             |FROM information_schema.views vs
             |WHERE vs.table_schema = ?
             """.trimMargin(),
             schemaName
-        ) { viewMarshaller.read(it) }
+        )
     }
 
-    override suspend fun listColumns(schemaName: String, tableName: String): DomainResult<List<Column>> = trap {
-        log.selectLogged(
+    override suspend fun listColumns(
+        schemaName: String,
+        tableName: String
+    ): DomainResult<List<Column>> = domainResult {
+        select(
+            columnMarshaller,
             """SELECT ${columnMarshaller.project("cs")}
             |FROM information_schema.columns cs
             |WHERE cs.table_schema = ? AND cs.table_name = ?
             """.trimMargin(),
             schemaName,
             tableName
-        ) { columnMarshaller.read(it) }
+        )
     }
 
     override suspend fun listTableConstraints(
         schemaName: String,
         tableName: String
-    ): DomainResult<List<TableConstraint>> = trap {
-        log.selectLogged(
+    ): DomainResult<List<TableConstraint>> = domainResult {
+        select(
+            tableConstraintMarshaller,
             """SELECT ${tableConstraintMarshaller.project("tcs")}
             |FROM information_schema.table_constraints tcs
             |WHERE tcs.table_schema = ? AND tcs.table_name = ?
             """.trimMargin(),
             schemaName,
             tableName
-        ) { tableConstraintMarshaller.read(it) }
+        )
     }
 
-    override suspend fun listIndexes(schemaName: String, tableName: String): DomainResult<List<Index>> = trap {
-        log.selectLogged(
+    override suspend fun listIndexes(
+        schemaName: String,
+        tableName: String
+    ): DomainResult<List<Index>> = domainResult {
+        select(
+            indexMarshaller,
             """SELECT ${indexMarshaller.project("ixs")}
             |FROM pg_indexes ixs
             |WHERE ixs.schemaname = ? AND ixs.tablename = ?
             """.trimMargin(),
             schemaName,
             tableName
-        ) { indexMarshaller.read(it) }
+        )
     }
 
-    override suspend fun listForeignKeys(schemaName: String, tableName: String): DomainResult<List<ForeignKey>> = trap {
-        log.selectLogged(
+    override suspend fun listForeignKeys(
+        schemaName: String,
+        tableName: String
+    ): DomainResult<List<ForeignKey>> = domainResult {
+        select(
+            foreignKeyMarshaller,
             foreignKeys(FKDirection.FROM),
             schemaName,
             tableName
-        ) { foreignKeyMarshaller.read(it) }
+        )
     }
 
-    override suspend fun listForeignKeyRefs(schemaName: String, tableName: String): DomainResult<List<ForeignKey>> =
-        trap {
-            log.selectLogged(
-                foreignKeys(FKDirection.TO),
-                schemaName,
-                tableName
-            ) { foreignKeyMarshaller.read(it) }
-        }
+    override suspend fun listForeignKeyRefs(
+        schemaName: String,
+        tableName: String
+    ): DomainResult<List<ForeignKey>> = domainResult {
+        select(
+            foreignKeyMarshaller,
+            foreignKeys(FKDirection.TO),
+            schemaName,
+            tableName
+        )
+    }
 }
 
 private enum class FKDirection(val tableName: String) {
@@ -144,25 +177,3 @@ private fun foreignKeys(dir: FKDirection) =
     |    AND ${dir.tableName}.table_schema = ?
     |    AND ${dir.tableName}.table_name = ?
     """.trimMargin()
-
-context(Database)
-internal suspend fun <T> LazyLogger.selectLogged(
-    sql: String,
-    vararg params: Any,
-    reader: suspend (ResultSet) -> T
-): List<T> {
-    debug { "SQL\n$sql" }
-    return select(sql, *params) { reader(it) }
-}
-
-/**
- * Guards against throw exceptions and translates them to domain errors.
- */
-internal suspend fun <T> trap(block: suspend () -> T): DomainResult<T> =
-    try {
-        block().right()
-    } catch (e: CancellationException) {
-        throw e
-    } catch (e: Throwable) {
-        DomainError.InternalServerError(e).left()
-    }

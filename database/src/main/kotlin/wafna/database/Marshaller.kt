@@ -3,7 +3,7 @@ package wafna.database
 import java.sql.ResultSet
 
 /**
- * Creates projections on fields and reads records from a [ResultSet].
+ * Creates projections on fields and reads records from a result set.
  */
 abstract class Marshaller<T> {
     abstract val columnNames: List<String>

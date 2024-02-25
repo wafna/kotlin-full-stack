@@ -1,5 +1,5 @@
 # db
 
-An ORM for the domain based on `jdbc`.
+The database view for the application.
 
-The core `Database` class builds on a handful of functions for managing connections, statements, and result sets.
+Uses a mix of generic and custom marshallers.
