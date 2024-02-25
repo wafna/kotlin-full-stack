@@ -13,9 +13,9 @@ pluginManagement {
 
 include(
     "util",
-    "database",
+    "kdbc",
     "domain",
-    "db",
+    "database",
     "server",
     "browser",
     "test"

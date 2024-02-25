@@ -1,7 +1,7 @@
 package wafna.dbexplorer.db.marshallers
 
 import com.google.common.base.CaseFormat
-import wafna.database.FieldNameConverter
+import wafna.kdbc.FieldNameConverter
 
 val appDbFieldNameConverter = object : FieldNameConverter {
     override fun toColumnName(name: String): String =

@@ -1,6 +1,6 @@
 package wafna.dbexplorer.db.marshallers
 
-import wafna.database.Marshaller
+import wafna.kdbc.Marshaller
 import wafna.dbexplorer.domain.ForeignKey
 
 val foreignKeyMarshaller = object : Marshaller<ForeignKey>() {

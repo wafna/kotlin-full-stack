@@ -2,7 +2,7 @@
 
 package wafna.dbexplorer.db
 
-import wafna.database.Database
+import wafna.kdbc.Database
 import javax.sql.DataSource
 
 interface AppDb {

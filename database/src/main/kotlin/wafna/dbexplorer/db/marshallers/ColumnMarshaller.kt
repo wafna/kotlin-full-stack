@@ -1,6 +1,6 @@
 package wafna.dbexplorer.db.marshallers
 
-import wafna.database.genericMarshaller
+import wafna.kdbc.genericMarshaller
 import wafna.dbexplorer.domain.Column
 
 /**

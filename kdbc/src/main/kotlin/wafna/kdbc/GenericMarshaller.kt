@@ -1,4 +1,4 @@
-package wafna.database
+package wafna.kdbc
 
 import java.sql.ResultSet
 import kotlin.reflect.KClass

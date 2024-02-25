@@ -1,6 +1,6 @@
 package wafna.dbexplorer.db
 
-import wafna.database.Database
+import wafna.kdbc.Database
 import wafna.dbexplorer.db.marshallers.columnMarshaller
 import wafna.dbexplorer.db.marshallers.foreignKeyMarshaller
 import wafna.dbexplorer.db.marshallers.indexMarshaller

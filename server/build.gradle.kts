@@ -22,7 +22,7 @@ dependencies {
     implementation("io.ktor:ktor-serialization-gson:$ktorVersion")
 
     api(project(":util"))
-    api(project(":db"))
+    api(project(":database"))
 }
 
 application {
