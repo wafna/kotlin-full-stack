@@ -20,7 +20,7 @@ import io.ktor.server.plugins.cors.routing.CORS
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
 import wafna.dbexplorer.db.AppDb
-import wafna.dbexplorer.db.createAppDb
+import wafna.dbexplorer.db.appDb
 import wafna.dbexplorer.server.routes.api
 import wafna.dbexplorer.util.LazyLogger
 import java.io.File
@@ -42,7 +42,7 @@ fun DatabaseConfig.hikariConfig() = HikariConfig().also {
 
 internal suspend fun runDB(config: DatabaseConfig, callback: suspend (AppDb) -> Unit) {
     HikariDataSource(config.hikariConfig()).use { dataSource ->
-        val appDB = createAppDb(dataSource)
+        val appDB = appDb(dataSource)
         callback(appDB)
     }
 }

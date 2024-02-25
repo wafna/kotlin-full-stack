@@ -34,6 +34,9 @@ inline fun <reified T : Any> genericMarshaller(caseConverter: FieldNameConverter
                     Int::class.java ->
                         resultSet.getInt(nameMap[paramName]!!)
 
+                    Long::class.java ->
+                        resultSet.getLong(nameMap[paramName]!!)
+
                     String::class.java ->
                         resultSet.getString(nameMap[paramName]!!)
 

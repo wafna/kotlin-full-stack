@@ -4,27 +4,22 @@ package wafna.dbexplorer.db
 
 import arrow.core.left
 import arrow.core.right
-import java.sql.ResultSet
 import java.util.concurrent.CancellationException
 import javax.sql.DataSource
 import wafna.database.Database
-import wafna.database.Marshaller
 import wafna.dbexplorer.domain.errors.DomainError
 import wafna.dbexplorer.domain.errors.DomainResult
-import wafna.dbexplorer.util.LazyLogger
-
-fun createAppDb(dataSource: DataSource): AppDb {
-    with(Database(dataSource)) {
-        return object : AppDb {
-            override val meta: MetaDao = createMetaDAO()
-        }
-    }
-}
 
 interface AppDb {
     val meta: MetaDao
 }
 
+fun appDb(dataSource: DataSource): AppDb =
+    with(Database(dataSource)) {
+        object : AppDb {
+            override val meta: MetaDao = metaDAO()
+        }
+    }
 
 /**
  * Guards against thrown exceptions and translates them to domain errors.

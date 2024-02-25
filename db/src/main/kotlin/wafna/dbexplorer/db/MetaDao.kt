@@ -33,7 +33,7 @@ interface MetaDao {
 }
 
 context (Database)
-internal fun createMetaDAO() = object : MetaDao {
+internal fun metaDAO() = object : MetaDao {
     override suspend fun listSchemas(): DomainResult<List<Schema>> = domainResult {
         select(
             schemaMarshaller,
@@ -155,7 +155,8 @@ internal fun createMetaDAO() = object : MetaDao {
 }
 
 private enum class FKDirection(val tableName: String) {
-    FROM("tc"), TO("ccu")
+    FROM("tc"),
+    TO("ccu")
 }
 
 private fun foreignKeys(dir: FKDirection) =

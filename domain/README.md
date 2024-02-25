@@ -1,3 +1,3 @@
 # Domain
 
-No dependencies.
+Persisted objects.
