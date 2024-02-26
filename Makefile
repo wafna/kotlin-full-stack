@@ -11,6 +11,9 @@ test: FORCE
 rebuild: FORCE
 	@./gradlew clean build --warning-mode all
 
+deps: FORCE
+	@./gradlew dependencyUpdates
+
 # Apps.
 
 # CONFIG_FILE=../demo/config.yml make run-server
