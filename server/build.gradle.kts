@@ -25,6 +25,8 @@ dependencies {
     api(project(":database"))
 }
 
+tasks.run.get().workingDir = rootProject.projectDir
+
 application {
     mainClass.set("wafna.dbexplorer.server.AppKt")
 }

@@ -29,7 +29,7 @@ See the [demo](./demo/README.md) for more details.
 
 * Start the server.
 
-`CONFIG=../demo/config.yml make run-server`
+`CONFIG=./demo/config.yml make run-server`
 
 * Start the browser.
 
