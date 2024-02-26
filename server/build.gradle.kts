@@ -4,7 +4,7 @@ plugins {
 }
 
 val ktorVersion: String by project
-val hopliteVersion = "2.7.4"
+val hopliteVersion = "2.7.5"
 
 dependencies {
     implementation("io.arrow-kt:arrow-fx:0.12.1")
