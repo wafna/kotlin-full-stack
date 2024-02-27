@@ -29,9 +29,9 @@ object Projections {
             "indexdef"
         )
     )
-    val tableConstraints = projection<TableConstraint>("information_schema.foreign_keys", fieldNameConverter)
+    val tableConstraints = projection<TableConstraint>("information_schema.table_constraints", fieldNameConverter)
     val foreignKeys = projection<ForeignKey>(
-        "information_schema.table_constraints", listOf(
+        "information_schema.foreign_keys", listOf(
             "schema_name",
             "table_name",
             "constraint_name",

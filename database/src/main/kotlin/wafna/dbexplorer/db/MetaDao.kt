@@ -127,7 +127,7 @@ internal fun metaDAO() = object : MetaDao {
         tableName: String
     ): DomainResult<List<ForeignKey>> = domainResult {
         withConnection {
-            select(
+            selectRaw(
                 foreignKeys,
                 foreignKeys(FKDirection.FROM),
                 schemaName,
