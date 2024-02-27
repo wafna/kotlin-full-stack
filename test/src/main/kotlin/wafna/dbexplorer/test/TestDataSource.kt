@@ -1,4 +1,4 @@
-package test
+package wafna.dbexplorer.test
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource

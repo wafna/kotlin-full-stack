@@ -18,5 +18,5 @@ include(
     "database",
     "server",
     "browser",
-    "integration-test"
+    "test"
 )

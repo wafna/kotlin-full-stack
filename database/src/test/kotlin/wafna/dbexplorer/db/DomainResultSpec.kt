@@ -18,7 +18,7 @@ class DomainResultSpec : StringSpec({
     }
 
     "domainResult should return left when block throws" {
-        when (val result = domainResult { throw RuntimeException("test") }) {
+        when (val result = domainResult { throw RuntimeException("wafna/dbexplorer/test") }) {
             is Either.Left ->
                 result.value.shouldBeInstanceOf<DomainError.InternalServerError>()
 

@@ -15,7 +15,7 @@ val integrationTest = java.sourceSets.create("integrationTest").apply {
     dependencies {
         implementation("com.google.guava:guava:33.0.0-jre")
         implementation("org.postgresql:postgresql:42.7.2")
-        implementation(project(":integration-test"))
+        implementation(project(":test"))
     }
 }
 
