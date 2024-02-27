@@ -7,6 +7,7 @@ plugins {
 
 val coroutinesCoreVersion: String by project
 val arrowVersion: String by project
+val kotestVersion: String by project
 
 kotlin {
     jvmToolchain(17)
@@ -22,8 +23,8 @@ dependencies {
     implementation("io.arrow-kt:arrow-fx-coroutines:$arrowVersion")
     implementation("io.arrow-kt:arrow-fx-stm:$arrowVersion")
 
-    testImplementation("io.kotest:kotest-runner-junit5-jvm:5.8.0")
-    testImplementation("io.kotest:kotest-assertions-core:5.8.0")
+    testImplementation("io.kotest:kotest-runner-junit5-jvm:$kotestVersion")
+    testImplementation("io.kotest:kotest-assertions-core:$kotestVersion")
 }
 
 tasks {
