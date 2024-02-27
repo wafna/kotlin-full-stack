@@ -1,13 +1,12 @@
 package wafna.dbexplorer.db
 
-import wafna.kdbc.Database
-import wafna.dbexplorer.db.marshallers.columnMarshaller
-import wafna.dbexplorer.db.marshallers.foreignKeyMarshaller
-import wafna.dbexplorer.db.marshallers.indexMarshaller
-import wafna.dbexplorer.db.marshallers.schemaMarshaller
-import wafna.dbexplorer.db.marshallers.tableConstraintMarshaller
-import wafna.dbexplorer.db.marshallers.tableMarshaller
-import wafna.dbexplorer.db.marshallers.viewMarshaller
+import wafna.dbexplorer.db.Projections.columnMarshaller
+import wafna.dbexplorer.db.Projections.foreignKeyMarshaller
+import wafna.dbexplorer.db.Projections.indexMarshaller
+import wafna.dbexplorer.db.Projections.schemaMarshaller
+import wafna.dbexplorer.db.Projections.tableConstraintMarshaller
+import wafna.dbexplorer.db.Projections.tableMarshaller
+import wafna.dbexplorer.db.Projections.viewMarshaller
 import wafna.dbexplorer.domain.Column
 import wafna.dbexplorer.domain.ForeignKey
 import wafna.dbexplorer.domain.Index
@@ -17,6 +16,8 @@ import wafna.dbexplorer.domain.TableConstraint
 import wafna.dbexplorer.domain.View
 import wafna.dbexplorer.domain.errors.DomainResult
 import wafna.dbexplorer.util.LazyLogger
+import wafna.kdbc.Database
+import wafna.kdbc.select
 
 private val log = LazyLogger(MetaDao::class)
 
@@ -35,123 +36,141 @@ interface MetaDao {
 context (Database)
 internal fun metaDAO() = object : MetaDao {
     override suspend fun listSchemas(): DomainResult<List<Schema>> = domainResult {
-        select(
-            schemaMarshaller,
-            """SELECT ${schemaMarshaller.project("ss")}
+        withConnection {
+            select(
+                schemaMarshaller,
+                """SELECT ${schemaMarshaller.alias("ss")}
             |FROM information_schema.schemata ss
             """.trimMargin()
-        )
+            )
+        }
     }
 
     override suspend fun listTables(
         schemaName: String
     ): DomainResult<List<Table>> = domainResult {
-        select(
-            tableMarshaller,
-            """SELECT ${tableMarshaller.project("ts")}
+        withConnection {
+            select(
+                tableMarshaller,
+                """SELECT ${tableMarshaller.alias("ts")}
             |FROM information_schema.tables ts
             |WHERE ts.table_schema = ?
             """.trimMargin(),
-            schemaName
-        )
+                schemaName
+            )
+        }
     }
 
     override suspend fun getTable(
         schemaName: String,
         tableName: String
     ): DomainResult<Table?> = domainResult {
-        select(
-            tableMarshaller,
-            """SELECT ${tableMarshaller.project("ts")}
+        withConnection {
+            select(
+                tableMarshaller,
+                """SELECT ${tableMarshaller.alias("ts")}
             |FROM information_schema.tables ts
             |WHERE ts.table_schema = ?
             |  AND ts.table_name = ?
             """.trimMargin(),
-            schemaName,
-            tableName
-        ).firstOrNull()
+                schemaName,
+                tableName
+            ).firstOrNull()
+        }
     }
 
     override suspend fun listViews(
         schemaName: String
     ): DomainResult<List<View>> = domainResult {
-        select(
-            viewMarshaller,
-            """SELECT ${viewMarshaller.project("vs")}
+        withConnection {
+            select(
+                viewMarshaller,
+                """SELECT ${viewMarshaller.alias("vs")}
             |FROM information_schema.views vs
             |WHERE vs.table_schema = ?
             """.trimMargin(),
-            schemaName
-        )
+                schemaName
+            )
+        }
     }
 
     override suspend fun listColumns(
         schemaName: String,
         tableName: String
     ): DomainResult<List<Column>> = domainResult {
-        select(
-            columnMarshaller,
-            """SELECT ${columnMarshaller.project("cs")}
+        withConnection {
+            select(
+                columnMarshaller,
+                """SELECT ${columnMarshaller.alias("cs")}
             |FROM information_schema.columns cs
             |WHERE cs.table_schema = ? AND cs.table_name = ?
             """.trimMargin(),
-            schemaName,
-            tableName
-        )
+                schemaName,
+                tableName
+            )
+        }
     }
 
     override suspend fun listTableConstraints(
         schemaName: String,
         tableName: String
     ): DomainResult<List<TableConstraint>> = domainResult {
-        select(
-            tableConstraintMarshaller,
-            """SELECT ${tableConstraintMarshaller.project("tcs")}
+        withConnection {
+            select(
+                tableConstraintMarshaller,
+                """SELECT ${tableConstraintMarshaller.alias("tcs")}
             |FROM information_schema.table_constraints tcs
             |WHERE tcs.table_schema = ? AND tcs.table_name = ?
             """.trimMargin(),
-            schemaName,
-            tableName
-        )
+                schemaName,
+                tableName
+            )
+        }
     }
 
     override suspend fun listIndexes(
         schemaName: String,
         tableName: String
     ): DomainResult<List<Index>> = domainResult {
-        select(
-            indexMarshaller,
-            """SELECT ${indexMarshaller.project("ixs")}
+        withConnection {
+            select(
+                indexMarshaller,
+                """SELECT ${indexMarshaller.alias("ixs")}
             |FROM pg_indexes ixs
             |WHERE ixs.schemaname = ? AND ixs.tablename = ?
             """.trimMargin(),
-            schemaName,
-            tableName
-        )
+                schemaName,
+                tableName
+            )
+        }
     }
 
     override suspend fun listForeignKeys(
         schemaName: String,
         tableName: String
     ): DomainResult<List<ForeignKey>> = domainResult {
-        select(
-            foreignKeyMarshaller,
-            foreignKeys(FKDirection.FROM),
-            schemaName,
-            tableName
-        )
+        withConnection {
+            select(
+                foreignKeyMarshaller,
+                foreignKeys(FKDirection.FROM),
+                schemaName,
+                tableName
+            )
+        }
     }
 
     override suspend fun listForeignKeyRefs(
         schemaName: String,
         tableName: String
     ): DomainResult<List<ForeignKey>> = domainResult {
-        select(
-            foreignKeyMarshaller,
-            foreignKeys(FKDirection.TO),
-            schemaName,
-            tableName
-        )
+        withConnection {
+            select(
+                foreignKeyMarshaller,
+                foreignKeys(FKDirection.TO),
+                schemaName,
+                tableName
+            )
+        }
     }
 }
 

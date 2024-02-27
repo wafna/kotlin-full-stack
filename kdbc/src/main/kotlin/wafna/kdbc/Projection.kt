@@ -4,22 +4,34 @@ import java.sql.ResultSet
 import kotlin.reflect.KClass
 import kotlin.reflect.jvm.javaType
 
+abstract class Projection<T>(val tableName: String) {
+    abstract val columnNames: List<String>
+
+    fun alias(prefix: String? = null): String = when {
+        prefix.isNullOrBlank() -> columnNames
+        else -> columnNames.map { "$prefix.$it" }
+    }.joinToString(", ")
+
+    fun inList(): String = "(${List(columnNames.size) { "?" }.joinToString(", ")})"
+
+    abstract fun read(resultSet: ResultSet): T
+
+    abstract fun write(value: T): List<Any>
+}
+
 interface FieldNameConverter {
     fun toColumnName(name: String): String
 }
 
-/**
- * Uses reflection to create a marshaller for a generic type.
- * Projection column names are inferred from the constructor parameter names using the case converter.
- * The result set column names are mapped to the constructor parameters using the case converter.
- * This type T is restricted to Kotlin classes.
- */
-inline fun <reified T : Any> genericMarshaller(caseConverter: FieldNameConverter): Marshaller<T> =
-    genericMarshaller(T::class, caseConverter)
+inline fun <reified T : Any> projection(tableName: String, caseConverter: FieldNameConverter): Projection<T> =
+    projection(T::class, tableName, caseConverter)
 
 @PublishedApi
-internal fun <T : Any> genericMarshaller(type: KClass<T>, caseConverter: FieldNameConverter): Marshaller<T> {
-    // Cached type and mapping info.
+internal fun <T : Any> projection(
+    type: KClass<T>,
+    tableName: String,
+    caseConverter: FieldNameConverter
+): Projection<T> {
     val ctor = type.constructors.first()
     val ctorParams = ctor.parameters
         .associateBy { it.name!! }
@@ -27,10 +39,8 @@ internal fun <T : Any> genericMarshaller(type: KClass<T>, caseConverter: FieldNa
     val ctorParamNames = ctorParams.keys.toList()
     val columns = ctorParamNames.map { caseConverter.toColumnName(it) }
     val nameMap = ctorParamNames.zip(columns).toMap()
-
-    return object : Marshaller<T>() {
+    return object : Projection<T>(tableName) {
         override val columnNames: List<String> = columns
-
         override fun read(resultSet: ResultSet): T {
             val values = ctorParamNames.map { paramName ->
                 // We need to match on the java type for primitives.
@@ -60,5 +70,13 @@ internal fun <T : Any> genericMarshaller(type: KClass<T>, caseConverter: FieldNa
             }
             return ctor.call(*values.toTypedArray())
         }
+
+        override fun write(value: T): List<Any> =
+            ctorParamNames.map { paramName ->
+                value.javaClass.getDeclaredField(paramName).run {
+                    isAccessible = true
+                    get(value)
+                }
+            }
     }
 }

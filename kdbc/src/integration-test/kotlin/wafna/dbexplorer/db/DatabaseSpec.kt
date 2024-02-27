@@ -9,11 +9,14 @@ import java.util.UUID
 import test.withTestDataSource
 import wafna.kdbc.Database
 import wafna.kdbc.FieldNameConverter
-import wafna.kdbc.genericMarshaller
+import wafna.kdbc.insert
+import wafna.kdbc.projection
+import wafna.kdbc.select
+import wafna.kdbc.update
 
 data class Server(val id: UUID, val hostName: String) {
     companion object {
-        val marshaller = genericMarshaller<Server>(object : FieldNameConverter {
+        val projection = projection<Server>("widgets.servers", object : FieldNameConverter {
             override fun toColumnName(name: String): String =
                 CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, name)
         })
@@ -24,16 +27,26 @@ fun Int.unique() {
     if (1 != this) fail("No value inserted.")
 }
 
-class TestDB(val db: Database) {
-    suspend fun listServers(): List<Server> =
-        db.select(Server.marshaller, "SELECT ${Server.marshaller.project()} FROM widgets.servers")
+fun <T> List<T>.distinct(): T? =
+    if (size > 2) fail("Too many values: $size")
+    else firstOrNull()
 
-    suspend fun insertServer(server: Server): Unit =
-        db.update(
-            "INSERT INTO widgets.servers (${Server.marshaller.project()}) VALUES ${Server.marshaller.inList()}",
-            server.id,
-            server.hostName
-        ).unique()
+fun List<Int>.assertUpdates(count: Int) {
+    size shouldBe count
+}
+
+class TestDB(val db: Database) {
+    suspend fun listServers(): List<Server> = db.withConnection {
+        select(Server.projection, "SELECT ${Server.projection.alias()} FROM ${Server.projection.tableName}")
+    }
+
+    suspend fun insertServer(server: Server): Unit = db.withConnection {
+        insert(Server.projection, listOf(server)).assertUpdates(1)
+    }
+
+    suspend fun updateHost(id: UUID, hostName: String): Unit = db.withConnection {
+        update("UPDATE ${Server.projection.tableName} SET host_name = ? WHERE id = ?", hostName, id).unique()
+    }
 }
 
 suspend fun withTestDB(borrow: suspend (TestDB) -> Unit) {
@@ -43,7 +56,7 @@ suspend fun withTestDB(borrow: suspend (TestDB) -> Unit) {
 }
 
 class DatabaseSpec : StringSpec({
-    "select and insert" {
+    "select, insert, update" {
         withTestDB { db ->
             db.listServers().shouldBeEmpty()
             val server = Server(UUID.randomUUID(), "example.com")
@@ -53,6 +66,15 @@ class DatabaseSpec : StringSpec({
                 servers.first().apply {
                     id shouldBe server.id
                     hostName shouldBe server.hostName
+                }
+            }
+            val newHostName = "127.0.0.1"
+            db.updateHost(server.id, newHostName)
+            db.listServers().let { servers ->
+                servers.size shouldBe 1
+                servers.first().apply {
+                    id shouldBe server.id
+                    hostName shouldBe newHostName
                 }
             }
         }

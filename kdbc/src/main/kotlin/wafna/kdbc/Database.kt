@@ -6,39 +6,50 @@ import java.sql.ResultSet
 import javax.sql.DataSource
 
 class Database(private val dataSource: DataSource) {
-    private suspend fun <T> withConnection(borrow: suspend Connection.() -> T) =
-        dataSource.connection.use { it.borrow() }
-
-    suspend fun <T> select(sql: String, vararg params: Any, reader: suspend (ResultSet) -> T): List<T> =
-        withConnection {
-            withStatement(sql) {
-                params.forEachIndexed { index, param ->
-                    setObject(index + 1, param)
+    suspend fun <T> withConnection(borrow: suspend Connection.() -> T): T =
+        dataSource.connection.use { connection ->
+            connection.autoCommit = false
+            connection.beginRequest()
+            try {
+                return connection.borrow().also {
+                    connection.commit()
                 }
-                readRecords { reader(it) }
-            }
-        }
-
-    suspend fun <T> select(marshaller: Marshaller<T>, sql: String, vararg params: Any): List<T> =
-        withConnection {
-            withStatement(sql) {
-                params.forEachIndexed { index, param ->
-                    setObject(index + 1, param)
-                }
-                readRecords { marshaller.read(it) }
-            }
-        }
-
-    suspend fun update(sql: String, vararg params: Any): Int =
-        withConnection {
-            withStatement(sql) {
-                params.forEachIndexed { index, param ->
-                    setObject(index + 1, param)
-                }
-                executeUpdate()
+            } catch (e: Throwable) {
+                connection.rollback()
+                throw e
+            } finally {
+                connection.endRequest()
             }
         }
 }
+
+suspend fun <T> Connection.select(projection: Projection<T>, sql: String, vararg params: Any): List<T> =
+    withStatement(sql) {
+        params.forEachIndexed { index, param ->
+            setObject(index + 1, param)
+        }
+        readRecords { projection.read(it) }
+    }
+
+suspend fun <T> Connection.insert(projection: Projection<T>, records: List<T>): List<Int> =
+    withStatement("INSERT INTO ${projection.tableName} (${projection.alias()}) VALUES ${projection.inList()}") {
+        records.forEach { record ->
+            val values = projection.write(record)
+            values.forEachIndexed { index, value ->
+                setObject(index + 1, value)
+            }
+            addBatch()
+        }
+        executeBatch().toList()
+    }
+
+suspend fun Connection.update(sql: String, vararg params: Any): Int =
+    withStatement(sql) {
+        params.forEachIndexed { index, param ->
+            setObject(index + 1, param)
+        }
+        executeUpdate()
+    }
 
 private suspend fun <T> Connection.withStatement(sql: String, borrow: suspend PreparedStatement.() -> T) =
     prepareStatement(sql).use { it.borrow() }
