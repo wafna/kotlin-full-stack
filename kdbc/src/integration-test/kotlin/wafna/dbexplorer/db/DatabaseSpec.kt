@@ -6,7 +6,7 @@ import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.shouldBe
 import java.util.UUID
-import test.withTestDataSource
+import wafna.dbexplorer.test.withTestDataSource
 import wafna.kdbc.Database
 import wafna.kdbc.FieldNameConverter
 import wafna.kdbc.insert

@@ -3,6 +3,7 @@ package wafna.kdbc
 import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet
+import java.util.concurrent.CancellationException
 import javax.sql.DataSource
 
 class Database(private val dataSource: DataSource) {
@@ -25,7 +26,7 @@ class Database(private val dataSource: DataSource) {
 
 suspend fun <T> Connection.selectRaw(projection: Projection<T>, sql: String, vararg params: Any?): List<T> =
     withStatement(sql) {
-        setParams(params)
+        setParams(* params)
         readRecords { projection.read(it) }
     }
 
@@ -35,7 +36,7 @@ suspend fun <T> Connection.select(projection: Projection<T>, alias: String, sql:
         |FROM ${projection.tableName}${if (alias.isBlank()) "" else " AS $alias"}
         |$sql""".trimMargin()
     ) {
-        setParams(params)
+        setParams(* params)
         readRecords { projection.read(it) }
     }
 
@@ -64,10 +65,17 @@ private suspend fun <T> Connection.withStatement(sql: String, borrow: suspend Pr
 
 private fun PreparedStatement.setParams(vararg params: Any?) {
     params.forEachIndexed { index, param ->
-        if (null == param)
-            setNull(index + 1, java.sql.Types.NULL)
-        else
-            setObject(index + 1, param)
+        val place = index + 1
+        try {
+            if (null == param)
+                setNull(place, java.sql.Types.NULL)
+            else
+                setObject(place, param)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Throwable) {
+            throw IllegalArgumentException("Error setting parameter $place to $param", e)
+        }
     }
 }
 
