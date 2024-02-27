@@ -37,7 +37,7 @@ fun List<Int>.assertUpdates(count: Int) {
 
 class TestDB(val db: Database) {
     suspend fun listServers(): List<Server> = db.withConnection {
-        select(Server.projection, "SELECT ${Server.projection.alias()} FROM ${Server.projection.tableName}")
+        select(Server.projection, "ss", "")
     }
 
     suspend fun insertServer(server: Server): Unit = db.withConnection {

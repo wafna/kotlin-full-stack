@@ -18,6 +18,7 @@ import wafna.dbexplorer.domain.errors.DomainResult
 import wafna.dbexplorer.util.LazyLogger
 import wafna.kdbc.Database
 import wafna.kdbc.select
+import wafna.kdbc.selectRaw
 
 private val log = LazyLogger(MetaDao::class)
 
@@ -37,12 +38,7 @@ context (Database)
 internal fun metaDAO() = object : MetaDao {
     override suspend fun listSchemas(): DomainResult<List<Schema>> = domainResult {
         withConnection {
-            select(
-                schemas,
-                """SELECT ${schemas.alias("ss")}
-            |FROM information_schema.schemata ss
-            """.trimMargin()
-            )
+            select(schemas, "ss", "")
         }
     }
 
@@ -51,11 +47,8 @@ internal fun metaDAO() = object : MetaDao {
     ): DomainResult<List<Table>> = domainResult {
         withConnection {
             select(
-                tables,
-                """SELECT ${tables.alias("ts")}
-            |FROM information_schema.tables ts
-            |WHERE ts.table_schema = ?
-            """.trimMargin(),
+                tables, "ts",
+                "WHERE ts.table_schema = ?",
                 schemaName
             )
         }
@@ -67,12 +60,10 @@ internal fun metaDAO() = object : MetaDao {
     ): DomainResult<Table?> = domainResult {
         withConnection {
             select(
-                tables,
-                """SELECT ${tables.alias("ts")}
-            |FROM information_schema.tables ts
-            |WHERE ts.table_schema = ?
-            |  AND ts.table_name = ?
-            """.trimMargin(),
+                tables, "ts",
+                """WHERE ts.table_schema = ?
+                |  AND ts.table_name = ?
+                |""".trimMargin(),
                 schemaName,
                 tableName
             ).firstOrNull()
@@ -84,11 +75,7 @@ internal fun metaDAO() = object : MetaDao {
     ): DomainResult<List<View>> = domainResult {
         withConnection {
             select(
-                views,
-                """SELECT ${views.alias("vs")}
-            |FROM information_schema.views vs
-            |WHERE vs.table_schema = ?
-            """.trimMargin(),
+                views, "vs", "WHERE vs.table_schema = ?",
                 schemaName
             )
         }
@@ -100,11 +87,7 @@ internal fun metaDAO() = object : MetaDao {
     ): DomainResult<List<Column>> = domainResult {
         withConnection {
             select(
-                columns,
-                """SELECT ${columns.alias("cs")}
-            |FROM information_schema.columns cs
-            |WHERE cs.table_schema = ? AND cs.table_name = ?
-            """.trimMargin(),
+                columns, "cs", "WHERE cs.table_schema = ? AND cs.table_name = ?",
                 schemaName,
                 tableName
             )
@@ -117,11 +100,8 @@ internal fun metaDAO() = object : MetaDao {
     ): DomainResult<List<TableConstraint>> = domainResult {
         withConnection {
             select(
-                tableConstraints,
-                """SELECT ${tableConstraints.alias("tcs")}
-            |FROM information_schema.table_constraints tcs
-            |WHERE tcs.table_schema = ? AND tcs.table_name = ?
-            """.trimMargin(),
+                tableConstraints, "tcs",
+                "WHERE tcs.table_schema = ? AND tcs.table_name = ?",
                 schemaName,
                 tableName
             )
@@ -134,11 +114,8 @@ internal fun metaDAO() = object : MetaDao {
     ): DomainResult<List<Index>> = domainResult {
         withConnection {
             select(
-                indexes,
-                """SELECT ${indexes.alias("ixs")}
-            |FROM pg_indexes ixs
-            |WHERE ixs.schemaname = ? AND ixs.tablename = ?
-            """.trimMargin(),
+                indexes, "ixs",
+                "WHERE ixs.schemaname = ? AND ixs.tablename = ?",
                 schemaName,
                 tableName
             )
@@ -164,7 +141,7 @@ internal fun metaDAO() = object : MetaDao {
         tableName: String
     ): DomainResult<List<ForeignKey>> = domainResult {
         withConnection {
-            select(
+            selectRaw(
                 foreignKeys,
                 foreignKeys(FKDirection.TO),
                 schemaName,

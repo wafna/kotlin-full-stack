@@ -23,8 +23,20 @@ class Database(private val dataSource: DataSource) {
         }
 }
 
-suspend fun <T> Connection.select(projection: Projection<T>, sql: String, vararg params: Any): List<T> =
+suspend fun <T> Connection.selectRaw(projection: Projection<T>, sql: String, vararg params: Any): List<T> =
     withStatement(sql) {
+        params.forEachIndexed { index, param ->
+            setObject(index + 1, param)
+        }
+        readRecords { projection.read(it) }
+    }
+
+suspend fun <T> Connection.select(projection: Projection<T>, alias: String, sql: String, vararg params: Any): List<T> =
+    withStatement(
+        """SELECT ${projection.alias(alias)}
+            |FROM ${projection.tableName}${if (alias.isBlank()) "" else " AS $alias"}
+            |$sql""".trimMargin()
+    ) {
         params.forEachIndexed { index, param ->
             setObject(index + 1, param)
         }

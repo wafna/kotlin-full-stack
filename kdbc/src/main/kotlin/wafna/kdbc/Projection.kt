@@ -38,9 +38,9 @@ inline fun <reified T : Any> projection(tableName: String, columnNames: List<Str
 /**
  * Create a projection by inferring column names from the object's fields.
  */
-inline fun <reified T : Any> projection(tableName: String, caseConverter: FieldNameConverter): Projection<T> {
+inline fun <reified T : Any> projection(tableName: String, fieldNameConverter: FieldNameConverter): Projection<T> {
     val columnNames = T::class.constructors.first()
-        .parameters.map { caseConverter.toColumnName(it.name!!) }
+        .parameters.map { fieldNameConverter.toColumnName(it.name!!) }
     return projection(T::class, tableName, columnNames)
 }
 
