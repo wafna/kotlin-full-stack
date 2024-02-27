@@ -9,12 +9,15 @@ import org.flywaydb.core.api.configuration.FluentConfiguration
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.utility.DockerImageName
 
+/**
+ * Spins up a database container, migrates it, and loans a data source.
+ */
 fun withTestDataSource(borrow: suspend (DataSource) -> Unit) {
     PostgreSQLContainer(DockerImageName.parse("postgres:15-alpine"))
         .withDatabaseName("integration-test")
         .withUsername("username")
         .withPassword("password")
-        .also { it.start() }
+        .apply { start() }
         .use { container ->
             val dataSource = HikariConfig()
                 .apply {

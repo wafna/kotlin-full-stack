@@ -20,8 +20,6 @@ import wafna.kdbc.Database
 import wafna.kdbc.select
 import wafna.kdbc.selectRaw
 
-private val log = LazyLogger(MetaDao::class)
-
 interface MetaDao {
     suspend fun listSchemas(): DomainResult<List<Schema>>
     suspend fun listTables(schemaName: String): DomainResult<List<Table>>
@@ -61,7 +59,7 @@ internal fun metaDAO() = object : MetaDao {
         withConnection {
             select(
                 tables, "ts",
-                "WHERE ts.table_schema = ? AND ts.table_name = ?".trimMargin(),
+                "WHERE ts.table_schema = ? AND ts.table_name = ?",
                 schemaName,
                 tableName
             ).firstOrNull()

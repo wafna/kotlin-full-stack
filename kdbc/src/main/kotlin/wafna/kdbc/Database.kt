@@ -23,23 +23,19 @@ class Database(private val dataSource: DataSource) {
         }
 }
 
-suspend fun <T> Connection.selectRaw(projection: Projection<T>, sql: String, vararg params: Any): List<T> =
+suspend fun <T> Connection.selectRaw(projection: Projection<T>, sql: String, vararg params: Any?): List<T> =
     withStatement(sql) {
-        params.forEachIndexed { index, param ->
-            setObject(index + 1, param)
-        }
+        setParams(params)
         readRecords { projection.read(it) }
     }
 
-suspend fun <T> Connection.select(projection: Projection<T>, alias: String, sql: String, vararg params: Any): List<T> =
+suspend fun <T> Connection.select(projection: Projection<T>, alias: String, sql: String, vararg params: Any?): List<T> =
     withStatement(
         """SELECT ${projection.alias(alias)}
-            |FROM ${projection.tableName}${if (alias.isBlank()) "" else " AS $alias"}
-            |$sql""".trimMargin()
+        |FROM ${projection.tableName}${if (alias.isBlank()) "" else " AS $alias"}
+        |$sql""".trimMargin()
     ) {
-        params.forEachIndexed { index, param ->
-            setObject(index + 1, param)
-        }
+        setParams(params)
         readRecords { projection.read(it) }
     }
 
@@ -65,6 +61,15 @@ suspend fun Connection.update(sql: String, vararg params: Any): Int =
 
 private suspend fun <T> Connection.withStatement(sql: String, borrow: suspend PreparedStatement.() -> T) =
     prepareStatement(sql).use { it.borrow() }
+
+private fun PreparedStatement.setParams(vararg params: Any?) {
+    params.forEachIndexed { index, param ->
+        if (null == param)
+            setNull(index + 1, java.sql.Types.NULL)
+        else
+            setObject(index + 1, param)
+    }
+}
 
 private suspend fun <R> PreparedStatement.readRecords(reader: suspend (ResultSet) -> R): List<R> = buildList {
     val resultSet = executeQuery()
