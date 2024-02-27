@@ -7,7 +7,11 @@ import java.util.concurrent.CancellationException
 import javax.sql.DataSource
 
 class Database(private val dataSource: DataSource) {
-    suspend fun <T> withConnection(borrow: suspend Connection.() -> T): T =
+    /**
+     * Execute the given block within a transaction.
+     * The transaction is committed if the block completes normally, and rolled back if it throws an exception.
+     */
+    suspend fun <T> transact(borrow: suspend Connection.() -> T): T =
         dataSource.connection.use { connection ->
             connection.autoCommit = false
             connection.beginRequest()
@@ -22,15 +26,26 @@ class Database(private val dataSource: DataSource) {
                 connection.endRequest()
             }
         }
+
+    /**
+     * Execute the given block, auto committing along the way.
+     */
+    suspend fun <T> autoCommit(borrow: suspend Connection.() -> T): T =
+        dataSource.connection.use { connection ->
+            connection.autoCommit = true
+            connection.beginRequest()
+            try {
+                return connection.borrow()
+            } finally {
+                connection.endRequest()
+            }
+        }
 }
 
-suspend fun <T> Connection.selectRaw(projection: Projection<T>, sql: String, vararg params: Any?): List<T> =
-    withStatement(sql) {
-        setParams(* params)
-        readRecords { projection.read(it) }
-    }
-
-suspend fun <T> Connection.select(projection: Projection<T>, alias: String, sql: String, vararg params: Any?): List<T> =
+/**
+ * Formulates a SELECT statement with the projection and table at the head.
+ */
+fun <T> Connection.select(projection: Projection<T>, alias: String, sql: String, vararg params: Any?): List<T> =
     withStatement(
         """SELECT ${projection.alias(alias)}
         |FROM ${projection.tableName}${if (alias.isBlank()) "" else " AS $alias"}
@@ -40,7 +55,16 @@ suspend fun <T> Connection.select(projection: Projection<T>, alias: String, sql:
         readRecords { projection.read(it) }
     }
 
-suspend fun <T> Connection.insert(projection: Projection<T>, records: List<T>): List<Int> =
+fun <T> Connection.selectCustom(projection: Projection<T>, sql: String, vararg params: Any?): List<T> =
+    withStatement(sql) {
+        setParams(* params)
+        readRecords { projection.read(it) }
+    }
+
+/**
+ * Formulates an INSERT and batches the records.
+ */
+fun <T> Connection.insert(projection: Projection<T>, records: List<T>): List<Int> =
     withStatement("INSERT INTO ${projection.tableName} (${projection.alias()}) VALUES ${projection.inList()}") {
         records.forEach { record ->
             val values = projection.write(record)
@@ -52,7 +76,7 @@ suspend fun <T> Connection.insert(projection: Projection<T>, records: List<T>): 
         executeBatch().toList()
     }
 
-suspend fun Connection.update(sql: String, vararg params: Any): Int =
+fun Connection.update(sql: String, vararg params: Any): Int =
     withStatement(sql) {
         params.forEachIndexed { index, param ->
             setObject(index + 1, param)
@@ -60,7 +84,7 @@ suspend fun Connection.update(sql: String, vararg params: Any): Int =
         executeUpdate()
     }
 
-private suspend fun <T> Connection.withStatement(sql: String, borrow: suspend PreparedStatement.() -> T) =
+private inline fun <T> Connection.withStatement(sql: String, borrow: PreparedStatement.() -> T) =
     prepareStatement(sql).use { it.borrow() }
 
 private fun PreparedStatement.setParams(vararg params: Any?) {
@@ -79,7 +103,7 @@ private fun PreparedStatement.setParams(vararg params: Any?) {
     }
 }
 
-private suspend fun <R> PreparedStatement.readRecords(reader: suspend (ResultSet) -> R): List<R> = buildList {
+private fun <R> PreparedStatement.readRecords(reader: (ResultSet) -> R): List<R> = buildList {
     val resultSet = executeQuery()
     while (resultSet.next()) {
         add(reader(resultSet))

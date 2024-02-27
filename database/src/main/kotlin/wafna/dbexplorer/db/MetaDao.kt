@@ -15,10 +15,9 @@ import wafna.dbexplorer.domain.Table
 import wafna.dbexplorer.domain.TableConstraint
 import wafna.dbexplorer.domain.View
 import wafna.dbexplorer.domain.errors.DomainResult
-import wafna.dbexplorer.util.LazyLogger
 import wafna.kdbc.Database
 import wafna.kdbc.select
-import wafna.kdbc.selectRaw
+import wafna.kdbc.selectCustom
 
 interface MetaDao {
     suspend fun listSchemas(): DomainResult<List<Schema>>
@@ -35,7 +34,7 @@ interface MetaDao {
 context (Database)
 internal fun metaDAO() = object : MetaDao {
     override suspend fun listSchemas(): DomainResult<List<Schema>> = domainResult {
-        withConnection {
+        transact {
             select(schemas, "ss", "")
         }
     }
@@ -43,7 +42,7 @@ internal fun metaDAO() = object : MetaDao {
     override suspend fun listTables(
         schemaName: String
     ): DomainResult<List<Table>> = domainResult {
-        withConnection {
+        transact {
             select(
                 tables, "ts",
                 "WHERE ts.table_schema = ?",
@@ -56,7 +55,7 @@ internal fun metaDAO() = object : MetaDao {
         schemaName: String,
         tableName: String
     ): DomainResult<Table?> = domainResult {
-        withConnection {
+        transact {
             select(
                 tables, "ts",
                 "WHERE ts.table_schema = ? AND ts.table_name = ?",
@@ -69,7 +68,7 @@ internal fun metaDAO() = object : MetaDao {
     override suspend fun listViews(
         schemaName: String
     ): DomainResult<List<View>> = domainResult {
-        withConnection {
+        transact {
             select(
                 views, "vs",
                 "WHERE vs.table_schema = ?",
@@ -82,7 +81,7 @@ internal fun metaDAO() = object : MetaDao {
         schemaName: String,
         tableName: String
     ): DomainResult<List<Column>> = domainResult {
-        withConnection {
+        transact {
             select(
                 columns, "cs",
                 "WHERE cs.table_schema = ? AND cs.table_name = ?",
@@ -96,7 +95,7 @@ internal fun metaDAO() = object : MetaDao {
         schemaName: String,
         tableName: String
     ): DomainResult<List<TableConstraint>> = domainResult {
-        withConnection {
+        transact {
             select(
                 tableConstraints, "tcs",
                 "WHERE tcs.table_schema = ? AND tcs.table_name = ?",
@@ -110,7 +109,7 @@ internal fun metaDAO() = object : MetaDao {
         schemaName: String,
         tableName: String
     ): DomainResult<List<Index>> = domainResult {
-        withConnection {
+        transact {
             select(
                 indexes, "ixs",
                 "WHERE ixs.schemaname = ? AND ixs.tablename = ?",
@@ -124,8 +123,8 @@ internal fun metaDAO() = object : MetaDao {
         schemaName: String,
         tableName: String
     ): DomainResult<List<ForeignKey>> = domainResult {
-        withConnection {
-            selectRaw(
+        transact {
+            selectCustom(
                 foreignKeys,
                 foreignKeys(FKDirection.FROM),
                 schemaName,
@@ -138,8 +137,8 @@ internal fun metaDAO() = object : MetaDao {
         schemaName: String,
         tableName: String
     ): DomainResult<List<ForeignKey>> = domainResult {
-        withConnection {
-            selectRaw(
+        transact {
+            selectCustom(
                 foreignKeys,
                 foreignKeys(FKDirection.TO),
                 schemaName,

@@ -36,15 +36,15 @@ fun List<Int>.assertUpdates(count: Int) {
 }
 
 class TestDB(val db: Database) {
-    suspend fun listServers(): List<Server> = db.withConnection {
+    suspend fun listServers(): List<Server> = db.transact {
         select(Server.projection, "ss", "")
     }
 
-    suspend fun insertServer(server: Server): Unit = db.withConnection {
+    suspend fun insertServer(server: Server): Unit = db.transact {
         insert(Server.projection, listOf(server)).assertUpdates(1)
     }
 
-    suspend fun updateHost(id: UUID, hostName: String): Unit = db.withConnection {
+    suspend fun updateHost(id: UUID, hostName: String): Unit = db.transact {
         update("UPDATE ${Server.projection.tableName} SET host_name = ? WHERE id = ?", hostName, id).unique()
     }
 }
