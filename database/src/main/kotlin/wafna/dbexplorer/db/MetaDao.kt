@@ -61,9 +61,7 @@ internal fun metaDAO() = object : MetaDao {
         withConnection {
             select(
                 tables, "ts",
-                """WHERE ts.table_schema = ?
-                |  AND ts.table_name = ?
-                |""".trimMargin(),
+                "WHERE ts.table_schema = ? AND ts.table_name = ?".trimMargin(),
                 schemaName,
                 tableName
             ).firstOrNull()
@@ -75,7 +73,8 @@ internal fun metaDAO() = object : MetaDao {
     ): DomainResult<List<View>> = domainResult {
         withConnection {
             select(
-                views, "vs", "WHERE vs.table_schema = ?",
+                views, "vs",
+                "WHERE vs.table_schema = ?",
                 schemaName
             )
         }
@@ -87,7 +86,8 @@ internal fun metaDAO() = object : MetaDao {
     ): DomainResult<List<Column>> = domainResult {
         withConnection {
             select(
-                columns, "cs", "WHERE cs.table_schema = ? AND cs.table_name = ?",
+                columns, "cs",
+                "WHERE cs.table_schema = ? AND cs.table_name = ?",
                 schemaName,
                 tableName
             )
