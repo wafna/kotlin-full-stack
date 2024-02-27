@@ -1,12 +1,12 @@
 package wafna.dbexplorer.db
 
-import wafna.dbexplorer.db.Projections.columnMarshaller
-import wafna.dbexplorer.db.Projections.foreignKeyMarshaller
-import wafna.dbexplorer.db.Projections.indexMarshaller
-import wafna.dbexplorer.db.Projections.schemaMarshaller
-import wafna.dbexplorer.db.Projections.tableConstraintMarshaller
-import wafna.dbexplorer.db.Projections.tableMarshaller
-import wafna.dbexplorer.db.Projections.viewMarshaller
+import wafna.dbexplorer.db.Projections.columns
+import wafna.dbexplorer.db.Projections.foreignKeys
+import wafna.dbexplorer.db.Projections.indexes
+import wafna.dbexplorer.db.Projections.schemas
+import wafna.dbexplorer.db.Projections.tableConstraints
+import wafna.dbexplorer.db.Projections.tables
+import wafna.dbexplorer.db.Projections.views
 import wafna.dbexplorer.domain.Column
 import wafna.dbexplorer.domain.ForeignKey
 import wafna.dbexplorer.domain.Index
@@ -38,8 +38,8 @@ internal fun metaDAO() = object : MetaDao {
     override suspend fun listSchemas(): DomainResult<List<Schema>> = domainResult {
         withConnection {
             select(
-                schemaMarshaller,
-                """SELECT ${schemaMarshaller.alias("ss")}
+                schemas,
+                """SELECT ${schemas.alias("ss")}
             |FROM information_schema.schemata ss
             """.trimMargin()
             )
@@ -51,8 +51,8 @@ internal fun metaDAO() = object : MetaDao {
     ): DomainResult<List<Table>> = domainResult {
         withConnection {
             select(
-                tableMarshaller,
-                """SELECT ${tableMarshaller.alias("ts")}
+                tables,
+                """SELECT ${tables.alias("ts")}
             |FROM information_schema.tables ts
             |WHERE ts.table_schema = ?
             """.trimMargin(),
@@ -67,8 +67,8 @@ internal fun metaDAO() = object : MetaDao {
     ): DomainResult<Table?> = domainResult {
         withConnection {
             select(
-                tableMarshaller,
-                """SELECT ${tableMarshaller.alias("ts")}
+                tables,
+                """SELECT ${tables.alias("ts")}
             |FROM information_schema.tables ts
             |WHERE ts.table_schema = ?
             |  AND ts.table_name = ?
@@ -84,8 +84,8 @@ internal fun metaDAO() = object : MetaDao {
     ): DomainResult<List<View>> = domainResult {
         withConnection {
             select(
-                viewMarshaller,
-                """SELECT ${viewMarshaller.alias("vs")}
+                views,
+                """SELECT ${views.alias("vs")}
             |FROM information_schema.views vs
             |WHERE vs.table_schema = ?
             """.trimMargin(),
@@ -100,8 +100,8 @@ internal fun metaDAO() = object : MetaDao {
     ): DomainResult<List<Column>> = domainResult {
         withConnection {
             select(
-                columnMarshaller,
-                """SELECT ${columnMarshaller.alias("cs")}
+                columns,
+                """SELECT ${columns.alias("cs")}
             |FROM information_schema.columns cs
             |WHERE cs.table_schema = ? AND cs.table_name = ?
             """.trimMargin(),
@@ -117,8 +117,8 @@ internal fun metaDAO() = object : MetaDao {
     ): DomainResult<List<TableConstraint>> = domainResult {
         withConnection {
             select(
-                tableConstraintMarshaller,
-                """SELECT ${tableConstraintMarshaller.alias("tcs")}
+                tableConstraints,
+                """SELECT ${tableConstraints.alias("tcs")}
             |FROM information_schema.table_constraints tcs
             |WHERE tcs.table_schema = ? AND tcs.table_name = ?
             """.trimMargin(),
@@ -134,8 +134,8 @@ internal fun metaDAO() = object : MetaDao {
     ): DomainResult<List<Index>> = domainResult {
         withConnection {
             select(
-                indexMarshaller,
-                """SELECT ${indexMarshaller.alias("ixs")}
+                indexes,
+                """SELECT ${indexes.alias("ixs")}
             |FROM pg_indexes ixs
             |WHERE ixs.schemaname = ? AND ixs.tablename = ?
             """.trimMargin(),
@@ -151,7 +151,7 @@ internal fun metaDAO() = object : MetaDao {
     ): DomainResult<List<ForeignKey>> = domainResult {
         withConnection {
             select(
-                foreignKeyMarshaller,
+                foreignKeys,
                 foreignKeys(FKDirection.FROM),
                 schemaName,
                 tableName
@@ -165,7 +165,7 @@ internal fun metaDAO() = object : MetaDao {
     ): DomainResult<List<ForeignKey>> = domainResult {
         withConnection {
             select(
-                foreignKeyMarshaller,
+                foreignKeys,
                 foreignKeys(FKDirection.TO),
                 schemaName,
                 tableName
@@ -181,11 +181,11 @@ private enum class FKDirection(val tableName: String) {
 
 private fun foreignKeys(dir: FKDirection) =
     """SELECT
-    |    tc.table_schema, 
+    |    tc.table_schema schema_name, 
     |    tc.table_name, 
     |    tc.constraint_name, 
     |    kcu.column_name, 
-    |    ccu.table_schema AS foreign_table_schema,
+    |    ccu.table_schema AS foreign_schema_name,
     |    ccu.table_name AS foreign_table_name,
     |    ccu.column_name AS foreign_column_name 
     |FROM information_schema.table_constraints AS tc 

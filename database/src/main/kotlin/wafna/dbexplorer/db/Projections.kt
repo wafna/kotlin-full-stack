@@ -17,12 +17,29 @@ private val fieldNameConverter = object : FieldNameConverter {
 }
 
 object Projections {
-    val schemaMarshaller = projection<Schema>("information_schema.schemata", fieldNameConverter)
-    val tableMarshaller = projection<Table>("information_schema.tables", fieldNameConverter)
-    val columnMarshaller = projection<Column>("information_schema.columns", fieldNameConverter)
-    val indexMarshaller = projection<Index>("pg_indexes", fieldNameConverter)
-    val foreignKeyMarshaller = projection<ForeignKey>("information_schema.foreign_keys", fieldNameConverter)
-    val tableConstraintMarshaller =
-        projection<TableConstraint>("information_schema.table_constraints", fieldNameConverter)
-    val viewMarshaller = projection<View>("information_schema.views", fieldNameConverter)
+    val schemas = projection<Schema>("information_schema.schemata", fieldNameConverter)
+    val tables = projection<Table>("information_schema.tables", fieldNameConverter)
+    val columns = projection<Column>("information_schema.columns", fieldNameConverter)
+    val indexes = projection<Index>(
+        "pg_indexes", listOf(
+            "schemaname",
+            "tablename",
+            "indexname",
+            "tablespace",
+            "indexdef"
+        )
+    )
+    val tableConstraints = projection<TableConstraint>("information_schema.foreign_keys", fieldNameConverter)
+    val foreignKeys = projection<ForeignKey>(
+        "information_schema.table_constraints", listOf(
+            "schema_name",
+            "table_name",
+            "constraint_name",
+            "column_name",
+            "foreign_schema_name",
+            "foreign_table_name",
+            "foreign_column_name"
+        )
+    )
+    val views = projection<View>("information_schema.views", fieldNameConverter)
 }

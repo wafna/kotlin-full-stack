@@ -23,24 +23,41 @@ interface FieldNameConverter {
     fun toColumnName(name: String): String
 }
 
-inline fun <reified T : Any> projection(tableName: String, caseConverter: FieldNameConverter): Projection<T> =
-    projection(T::class, tableName, caseConverter)
+/**
+ * Create a projection from the given column names.
+ */
+inline fun <reified T : Any> projection(tableName: String, columnNames: List<String>): Projection<T> {
+    val type = T::class
+    val declaredFields = type.java.declaredFields
+    require(declaredFields.size == columnNames.size) {
+        "Number of columns (${columnNames.size}) must match number of fields ${declaredFields.size} in $type"
+    }
+    return projection(T::class, tableName, columnNames)
+}
+
+/**
+ * Create a projection by inferring column names from the object's fields.
+ */
+inline fun <reified T : Any> projection(tableName: String, caseConverter: FieldNameConverter): Projection<T> {
+    val columnNames = T::class.constructors.first()
+        .parameters.map { caseConverter.toColumnName(it.name!!) }
+    return projection(T::class, tableName, columnNames)
+}
 
 @PublishedApi
 internal fun <T : Any> projection(
     type: KClass<T>,
     tableName: String,
-    caseConverter: FieldNameConverter
+    columnNames: List<String>
 ): Projection<T> {
     val ctor = type.constructors.first()
     val ctorParams = ctor.parameters
         .associateBy { it.name!! }
         .mapValues { it.value.type.javaType }
     val ctorParamNames = ctorParams.keys.toList()
-    val columns = ctorParamNames.map { caseConverter.toColumnName(it) }
-    val nameMap = ctorParamNames.zip(columns).toMap()
+    val nameMap = ctorParamNames.zip(columnNames).toMap()
     return object : Projection<T>(tableName) {
-        override val columnNames: List<String> = columns
+        override val columnNames: List<String> = columnNames
         override fun read(resultSet: ResultSet): T {
             val values = ctorParamNames.map { paramName ->
                 // We need to match on the java type for primitives.
