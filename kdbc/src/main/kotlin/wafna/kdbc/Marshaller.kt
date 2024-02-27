@@ -12,4 +12,6 @@ abstract class Marshaller<T> {
         prefix.isNullOrBlank() -> columnNames
         else -> columnNames.map { "$prefix.$it" }
     }.joinToString(", ")
+
+    fun inList(): String = "(${List(columnNames.size) { "?" }.joinToString(", ")})"
 }

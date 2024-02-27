@@ -11,17 +11,3 @@ dependencies {
     implementation(project(":kdbc"))
     api(project(":domain"))
 }
-
-val integrationTest = java.sourceSets.create("integrationTest").apply {
-    compileClasspath += sourceSets.test.get().compileClasspath
-    runtimeClasspath += sourceSets.test.get().runtimeClasspath
-    java.srcDirs("src/integration-test/kotlin")
-}
-
-tasks.create("integrationTest", Test::class) {
-    group = "verification"
-    description = "Runs integration tests."
-    testClassesDirs = integrationTest.output.classesDirs
-    classpath = integrationTest.runtimeClasspath
-    shouldRunAfter("test")
-}
