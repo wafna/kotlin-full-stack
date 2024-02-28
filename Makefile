@@ -8,11 +8,11 @@ spiff: FORCE
 test: FORCE
 	@./gradlew test
 
-rebuild: FORCE
-	@./gradlew clean build --warning-mode all
+integration-test: FORCE
+	@./gradlew integrationTest
 
-deps: FORCE
-	@./gradlew dependencyUpdates
+rebuild: FORCE
+	@./gradlew --warning-mode all clean build
 
 # Apps.
 
@@ -25,5 +25,9 @@ run-browser: FORCE
 
 # Util.
 
+deps: FORCE
+	@./gradlew dependencyUpdates
+
+# After changing deps in the browser project.
 yarn: FORCE
 	@./gradlew kotlinUpgradeYarnLock
