@@ -97,9 +97,9 @@ class DatabaseSpec : StringSpec({
             db.byId(UUID.randomUUID()).shouldBeNull()
             db.delete(thingy.id)
             db.list().shouldBeEmpty()
-            val names = listOf("Bob", "Carol", "Ted", "Alice").map { Thingy(UUID.randomUUID(), it) }
-            db.insert(* names.toTypedArray())
-            db.list().size shouldBe names.size
+            val thingies = listOf("Bob", "Carol", "Ted", "Alice").map { Thingy(UUID.randomUUID(), it) }
+            db.insert(* thingies.toTypedArray())
+            db.list().size shouldBe thingies.size
         }
     }
 })
