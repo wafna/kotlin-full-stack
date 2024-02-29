@@ -84,6 +84,14 @@ fun Connection.update(sql: String, vararg params: Any): Int =
         executeUpdate()
     }
 
+fun <T> Connection.delete(projection: Projection<T>, sql: String, vararg params: Any): Int =
+    withStatement("DELETE FROM ${projection.tableName} WHERE $sql") {
+        params.forEachIndexed { index, param ->
+            setObject(index + 1, param)
+        }
+        executeUpdate()
+    }
+
 private inline fun <T> Connection.withStatement(sql: String, borrow: PreparedStatement.() -> T) =
     prepareStatement(sql).use { it.borrow() }
 
