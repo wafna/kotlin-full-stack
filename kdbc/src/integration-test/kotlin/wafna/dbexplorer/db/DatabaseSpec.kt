@@ -4,6 +4,7 @@ import com.google.common.base.CaseFormat
 import io.kotest.assertions.fail
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.collections.shouldBeEmpty
+import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 import java.util.UUID
 import wafna.dbexplorer.test.withTestDataSource
@@ -16,20 +17,23 @@ import wafna.kdbc.update
 
 data class Server(val id: UUID, val hostName: String) {
     companion object {
-        val projection = projection<Server>("widgets.servers", object : FieldNameConverter {
-            override fun toColumnName(name: String): String =
-                CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, name)
-        })
+        val projection = projection<Server>(
+            tableName = "widgets.servers",
+            fieldNameConverter = object : FieldNameConverter {
+                override fun toColumnName(name: String): String =
+                    CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, name)
+            })
     }
+}
+
+fun <T> List<T>.optional(): T? = when {
+    isEmpty() -> null
+    else -> first()
 }
 
 fun Int.unique() {
     if (1 != this) fail("No value inserted.")
 }
-
-fun <T> List<T>.distinct(): T? =
-    if (size > 2) fail("Too many values: $size")
-    else firstOrNull()
 
 fun List<Int>.assertUpdates(count: Int) {
     size shouldBe count
@@ -42,6 +46,10 @@ class TestDB(val db: Database) {
 
     suspend fun insertServer(server: Server): Unit = db.transact {
         insert(Server.projection, listOf(server)).assertUpdates(1)
+    }
+
+    suspend fun getServerById(id: UUID): Server? = db.transact {
+        select(Server.projection, "ss", "WHERE id = ?", id).optional()
     }
 
     suspend fun updateHost(id: UUID, hostName: String): Unit = db.transact {
@@ -77,6 +85,11 @@ class DatabaseSpec : StringSpec({
                     hostName shouldBe newHostName
                 }
             }
+            db.getServerById(server.id)!!.apply {
+                id shouldBe server.id
+                hostName shouldBe newHostName
+            }
+            db.getServerById(UUID.randomUUID()).shouldBeNull()
         }
     }
 })
