@@ -41,6 +41,10 @@ Starts the browser in continuous update mode.
 
 `make run-browser`
 
+* Stop the demo docker containers.
+
+`make -C ./demo stop`
+
 ## Development
 
 * Start the database.
