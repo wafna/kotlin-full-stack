@@ -4,23 +4,32 @@ import com.google.common.base.CaseFormat
 import io.kotest.assertions.fail
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.collections.shouldBeEmpty
+import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 import java.util.UUID
 import wafna.fullstack.test.withTestDataSource
 import wafna.kdbc.Database
 import wafna.kdbc.FieldNameConverter
+import wafna.kdbc.delete
 import wafna.kdbc.insert
 import wafna.kdbc.projection
 import wafna.kdbc.select
 import wafna.kdbc.update
 
-data class Server(val id: UUID, val hostName: String) {
+data class Thingy(val id: UUID, val name: String) {
     companion object {
-        val projection = projection<Server>("widgets.servers", object : FieldNameConverter {
-            override fun toColumnName(name: String): String =
-                CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, name)
-        })
+        val projection = projection<Thingy>(
+            tableName = "testing.thingy",
+            fieldNameConverter = object : FieldNameConverter {
+                override fun toColumnName(name: String): String =
+                    CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, name)
+            })
     }
+}
+
+fun <T> List<T>.optional(): T? = when {
+    isEmpty() -> null
+    else -> first()
 }
 
 fun Int.unique() {
@@ -32,16 +41,24 @@ fun List<Int>.assertUpdates(count: Int) {
 }
 
 class TestDB(private val db: Database) {
-    suspend fun listServers(): List<Server> = db.transact {
-        select(Server.projection, "ss", "")
+    suspend fun list(): List<Thingy> = db.transact {
+        select(Thingy.projection, "ss", "")
     }
 
-    suspend fun insertServer(server: Server): Unit = db.transact {
-        insert(Server.projection, listOf(server)).assertUpdates(1)
+    suspend fun insert(vararg thingies: Thingy): Unit = db.transact {
+        insert(Thingy.projection, thingies.toList()).assertUpdates(thingies.size)
     }
 
-    suspend fun updateHost(id: UUID, hostName: String): Unit = db.transact {
-        update("UPDATE ${Server.projection.tableName} SET host_name = ? WHERE id = ?", hostName, id).unique()
+    suspend fun byId(id: UUID): Thingy? = db.transact {
+        select(Thingy.projection, "ss", "WHERE id = ?", id).optional()
+    }
+
+    suspend fun update(id: UUID, name: String): Unit = db.transact {
+        update("UPDATE ${Thingy.projection.tableName} SET name = ? WHERE id = ?", name, id).unique()
+    }
+
+    suspend fun delete(id: UUID): Unit = db.transact {
+        delete(Thingy.projection, "id = ?", id).unique()
     }
 }
 
@@ -54,25 +71,35 @@ suspend fun withTestDB(borrow: suspend (TestDB) -> Unit) {
 class DatabaseSpec : StringSpec({
     "select, insert, update" {
         withTestDB { db ->
-            db.listServers().shouldBeEmpty()
-            val server = Server(UUID.randomUUID(), "example.com")
-            db.insertServer(server)
-            db.listServers().let { servers ->
+            db.list().shouldBeEmpty()
+            val thingy = Thingy(UUID.randomUUID(), "Smith")
+            db.insert(thingy)
+            db.list().let { servers ->
                 servers.size shouldBe 1
                 servers.first().apply {
-                    id shouldBe server.id
-                    hostName shouldBe server.hostName
+                    id shouldBe thingy.id
+                    name shouldBe thingy.name
                 }
             }
-            val newHostName = "127.0.0.1"
-            db.updateHost(server.id, newHostName)
-            db.listServers().let { servers ->
+            val newName = "Jones"
+            db.update(thingy.id, newName)
+            db.list().let { servers ->
                 servers.size shouldBe 1
                 servers.first().apply {
-                    id shouldBe server.id
-                    hostName shouldBe newHostName
+                    id shouldBe thingy.id
+                    name shouldBe newName
                 }
             }
+            db.byId(thingy.id)!!.apply {
+                id shouldBe thingy.id
+                name shouldBe newName
+            }
+            db.byId(UUID.randomUUID()).shouldBeNull()
+            db.delete(thingy.id)
+            db.list().shouldBeEmpty()
+            val thingies = listOf("Bob", "Carol", "Ted", "Alice").map { Thingy(UUID.randomUUID(), it) }
+            db.insert(* thingies.toTypedArray())
+            db.list().size shouldBe thingies.size
         }
     }
 })

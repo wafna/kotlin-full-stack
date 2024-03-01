@@ -28,7 +28,7 @@ dependencies {
 tasks.run.get().workingDir = rootProject.projectDir
 
 application {
-    mainClass.set("wafna.dbexplorer.server.AppKt")
+    mainClass.set("wafna.fullstack.server.AppKt")
 }
 
 // The production browser is bundled into the server distribution.
@@ -38,7 +38,7 @@ listOf(":server:distZip", ":server:distTar").forEach { dep ->
 
 distributions {
     main {
-        distributionBaseName.set("db-explorer")
+        distributionBaseName.set("kotlin-full-stack-demo")
         contents {
             from(project(":browser").file("build/distributions")) {
                 into("browser")
