@@ -1,13 +1,15 @@
-# DB Explorer.
+# Kotlin Full Stack Demo
 
-A server that provides a web interface to explore a database.
+This project implements a server around a database and a web application written entirely in Kotlin.
+
+Includes Flyway, Ktor, Kotlin/JS, React, and integration tests with Postgres containers.
 
 | Sub-project                      | Description                                     |
 |----------------------------------|-------------------------------------------------|
 | [util](./util/README.md)         | Shared code.                                    |
-| [database](./database/README.md) | Generic JDBC wrapper.                           |
+| [kdbc](./kdbc/README.md)         | Light weight JDBC wrapper.                      |
 | [domain](./domain/README.md)     | The domain model.                               |
-| [db](./db/README.md)             | The application database model.                 |
+| [database](./database/README.md) | Application database.                           |
 | [server](./server/README.md)     | The HTTP API server.                            |
 | [browser](./browser/README.md)   | The web application.                            |
 | [demo](./demo/README.md)         | A small database for demonstrating the project. |

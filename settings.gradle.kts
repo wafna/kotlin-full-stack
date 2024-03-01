@@ -1,4 +1,4 @@
-rootProject.name = "db-explorer"
+rootProject.name = "kotlin-full-stack"
 
 pluginManagement {
     val kotlinVersion: String by settings
