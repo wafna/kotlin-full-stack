@@ -2,7 +2,9 @@
 
 This project implements a server around a database and a web application written entirely in Kotlin.
 
-Includes Flyway, Ktor, Kotlin/JS, React, and integration tests with Postgres containers.
+The web application introspects the target database.
+
+Includes Flyway, Ktor, Kotlin/JS, React, docker-compose, and integration tests with Postgres containers.
 
 | Sub-project                      | Description                                     |
 |----------------------------------|-------------------------------------------------|
@@ -49,6 +51,7 @@ See above.
 
 Use `AppKt` as the main class.
 Supply an environmental configuration, as above, or use the `--config` command line option.
+A run configuration for IDEA is provided in `/.run`
 
 * Run the browser.
 
