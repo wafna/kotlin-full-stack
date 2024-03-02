@@ -1,7 +1,7 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Demo" type="JetRunConfigurationType">
+  <configuration default="false" name="demo server" type="JetRunConfigurationType">
     <option name="MAIN_CLASS_NAME" value="wafna.fullstack.server.AppKt" />
-    <module name="full-stack.server.main" />
+    <module name="kotlin-full-stack.server.main" />
     <option name="PROGRAM_PARAMETERS" value="--config=demo/config.yml" />
     <shortenClasspath name="NONE" />
     <method v="2">
