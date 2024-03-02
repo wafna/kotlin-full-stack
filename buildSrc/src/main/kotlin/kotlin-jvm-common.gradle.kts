@@ -10,7 +10,7 @@ val arrowVersion: String by project
 val kotestVersion: String by project
 
 kotlin {
-    jvmToolchain(17)
+    jvmToolchain(18)
 }
 
 repositories {
