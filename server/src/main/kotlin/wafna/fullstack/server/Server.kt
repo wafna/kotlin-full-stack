@@ -21,6 +21,7 @@ import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
 import wafna.fullstack.db.AppDb
 import wafna.fullstack.db.appDb
+import wafna.fullstack.server.controllers.apiController
 import wafna.fullstack.server.routes.api
 import wafna.fullstack.util.LazyLogger
 import java.io.File
@@ -30,8 +31,6 @@ import java.util.UUID
 private object Server
 
 private val log = LazyLogger(Server::class)
-
-data class ServerContext(val db: AppDb)
 
 fun DatabaseConfig.hikariConfig() = HikariConfig().also {
     it.jdbcUrl = jdbcUrl
@@ -46,6 +45,8 @@ internal suspend fun runDB(config: DatabaseConfig, callback: suspend (AppDb) -> 
         callback(appDB)
     }
 }
+
+data class ServerContext(val db: AppDb)
 
 context(ServerContext)
 internal fun runServer(config: ServerConfig) {
@@ -73,7 +74,7 @@ private fun Application.installRoutes(staticDir: File) {
 
     routing {
         accessLog {
-            route("/api") { api() }
+            route("/api") { with(apiController()) { api() } }
             route("/") { staticFiles(remotePath = "/", dir = staticDir) }
         }
     }
