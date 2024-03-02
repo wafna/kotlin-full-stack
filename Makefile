@@ -11,8 +11,11 @@ test: FORCE
 integration-test: FORCE
 	@./gradlew integrationTest
 
-rebuild: FORCE
-	@./gradlew --warning-mode all clean build
+clean: FORCE
+	@./gradlew clean
+
+rebuild: clean
+	@./gradlew --warning-mode all build
 
 # Apps.
 
