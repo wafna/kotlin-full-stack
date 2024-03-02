@@ -6,19 +6,16 @@ import com.google.gson.JsonDeserializer
 import com.google.gson.JsonElement
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
-import io.ktor.http.HttpMethod
-import io.ktor.serialization.gson.gson
+import io.ktor.http.*
+import io.ktor.serialization.gson.*
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
-import io.ktor.server.engine.applicationEngineEnvironment
-import io.ktor.server.engine.connector
-import io.ktor.server.engine.embeddedServer
-import io.ktor.server.http.content.staticFiles
-import io.ktor.server.netty.Netty
-import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.server.plugins.cors.routing.CORS
-import io.ktor.server.routing.route
-import io.ktor.server.routing.routing
+import io.ktor.server.engine.*
+import io.ktor.server.http.content.*
+import io.ktor.server.netty.*
+import io.ktor.server.plugins.contentnegotiation.*
+import io.ktor.server.plugins.cors.routing.*
+import io.ktor.server.routing.*
 import wafna.fullstack.db.AppDb
 import wafna.fullstack.db.appDb
 import wafna.fullstack.server.controllers.apiController
@@ -26,7 +23,7 @@ import wafna.fullstack.server.routes.api
 import wafna.fullstack.util.LazyLogger
 import java.io.File
 import java.lang.reflect.Type
-import java.util.UUID
+import java.util.*
 
 private object Server
 

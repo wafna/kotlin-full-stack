@@ -4,7 +4,6 @@ import arrow.core.Either
 import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet
-import java.util.concurrent.CancellationException
 import javax.sql.DataSource
 
 class Database(private val dataSource: DataSource) {

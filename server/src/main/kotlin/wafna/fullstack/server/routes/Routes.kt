@@ -1,10 +1,9 @@
 package wafna.fullstack.server.routes
 
 import arrow.core.Either
-import io.ktor.http.HttpStatusCode
-import io.ktor.server.application.ApplicationCall
-import io.ktor.server.request.httpMethod
-import io.ktor.server.request.uri
+import io.ktor.http.*
+import io.ktor.server.application.*
+import io.ktor.server.request.*
 import wafna.fullstack.domain.errors.DomainError
 import wafna.fullstack.domain.errors.DomainResult
 import wafna.fullstack.util.LazyLogger

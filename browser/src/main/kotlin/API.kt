@@ -2,8 +2,8 @@ import domain.Schema
 import domain.Table
 import domain.TableDetail
 import util.get
-import util.makeURL
 import util.json
+import util.makeURL
 
 object API {
     private const val apiRoot = "http://localhost:8686/api/"

@@ -6,7 +6,6 @@ import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
-import java.util.UUID
 import wafna.fullstack.test.withTestDataSource
 import wafna.kdbc.Database
 import wafna.kdbc.FieldNameConverter
@@ -15,6 +14,7 @@ import wafna.kdbc.insert
 import wafna.kdbc.projection
 import wafna.kdbc.select
 import wafna.kdbc.update
+import java.util.*
 
 /**
  * The sole domain object.

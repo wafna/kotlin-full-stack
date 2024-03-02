@@ -1,14 +1,11 @@
 package wafna.fullstack.server.controllers
 
-import arrow.core.left
 import arrow.core.raise.either
-import io.ktor.server.response.*
 import wafna.fullstack.domain.Schema
 import wafna.fullstack.domain.Table
 import wafna.fullstack.domain.errors.DomainError
 import wafna.fullstack.domain.errors.DomainResult
 import wafna.fullstack.server.ServerContext
-import wafna.fullstack.server.routes.notFound
 import wafna.fullstack.server.views.TableView
 
 interface APIController {

@@ -1,8 +1,8 @@
 import kotlinx.browser.window
 import kotlinx.coroutines.launch
 import pages.OverviewView
-import pages.TableView
 import pages.SchemaView
+import pages.TableView
 import react.FC
 import react.Props
 import react.useEffectOnce

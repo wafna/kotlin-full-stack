@@ -1,7 +1,6 @@
 package wafna.fullstack.domain.errors
 
 import arrow.core.Either
-import java.lang.RuntimeException
 
 typealias DomainResult<T> = Either<DomainError, T>
 

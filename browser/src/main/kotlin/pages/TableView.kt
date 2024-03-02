@@ -1,7 +1,12 @@
 package pages
 
 import API
-import domain.*
+import TableRoute
+import domain.Column
+import domain.Constraint
+import domain.ForeignKey
+import domain.Index
+import domain.TableDetail
 import kotlinx.coroutines.launch
 import mainScope
 import react.FC

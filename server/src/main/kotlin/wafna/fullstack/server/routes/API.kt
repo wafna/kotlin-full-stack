@@ -1,13 +1,10 @@
 package wafna.fullstack.server.routes
 
 import arrow.core.raise.either
-import io.ktor.server.application.call
-import io.ktor.server.response.respond
-import io.ktor.server.routing.Route
-import io.ktor.server.routing.get
-import wafna.fullstack.server.ServerContext
+import io.ktor.server.application.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
 import wafna.fullstack.server.controllers.APIController
-import wafna.fullstack.server.views.TableView
 
 context(APIController)
 internal fun Route.api() {
