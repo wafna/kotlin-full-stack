@@ -4,6 +4,12 @@ import java.sql.ResultSet
 import kotlin.reflect.KClass
 import kotlin.reflect.jvm.javaType
 
+/**
+ * Encapsulates a projection from a result set to a domain object, T.
+ * Provides syntax generation for SQL.
+ * Defines operations for reading and writing domain objects.
+ * Note that writing is optional.
+ */
 abstract class Projection<T>(val tableName: String) {
     abstract val columnNames: List<String>
 
@@ -19,10 +25,6 @@ abstract class Projection<T>(val tableName: String) {
     abstract fun write(value: T): List<Any>
 }
 
-interface FieldNameConverter {
-    fun toColumnName(name: String): String
-}
-
 /**
  * Create a projection from the given column names.
  */
@@ -33,6 +35,10 @@ inline fun <reified T : Any> projection(tableName: String, columnNames: List<Str
         "Number of columns (${columnNames.size}) must match number of fields ${declaredFields.size} in $type"
     }
     return projection(T::class, tableName, columnNames)
+}
+
+interface FieldNameConverter {
+    fun toColumnName(name: String): String
 }
 
 /**
