@@ -1,5 +1,6 @@
 package wafna.kdbc
 
+import arrow.core.Either
 import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet
@@ -20,6 +21,7 @@ class Database(private val dataSource: DataSource) {
                     connection.commit()
                 }
             } catch (e: Throwable) {
+                // Ok to catch CancellationExceptions here because we're about to rethrow them.
                 connection.rollback()
                 throw e
             } finally {
@@ -98,22 +100,21 @@ private inline fun <T> Connection.withStatement(sql: String, borrow: PreparedSta
 private fun PreparedStatement.setParams(vararg params: Any?) {
     params.forEachIndexed { index, param ->
         val place = index + 1
-        try {
+        Either.catch {
             if (null == param)
                 setNull(place, java.sql.Types.NULL)
             else
                 setObject(place, param)
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Throwable) {
+        }.onLeft { e ->
             throw IllegalArgumentException("Error setting parameter $place to $param", e)
         }
     }
 }
 
 private fun <R> PreparedStatement.readRecords(reader: (ResultSet) -> R): List<R> = buildList {
-    val resultSet = executeQuery()
-    while (resultSet.next()) {
-        add(reader(resultSet))
+    executeQuery().use { resultSet ->
+        while (resultSet.next()) {
+            add(reader(resultSet))
+        }
     }
 }
