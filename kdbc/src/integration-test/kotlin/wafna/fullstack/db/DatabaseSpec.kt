@@ -16,6 +16,9 @@ import wafna.kdbc.projection
 import wafna.kdbc.select
 import wafna.kdbc.update
 
+/**
+ * The sole domain object.
+ */
 data class Thingy(val id: UUID, val name: String) {
     companion object {
         val projection = projection<Thingy>(
@@ -40,7 +43,10 @@ fun List<Int>.assertUpdates(count: Int) {
     size shouldBe count
 }
 
-class TestDB(private val db: Database) {
+/**
+ * CRUD for thingies.
+ */
+class TestDB internal constructor(private val db: Database) {
     suspend fun list(): List<Thingy> = db.transact {
         select(Thingy.projection, "ss", "")
     }
