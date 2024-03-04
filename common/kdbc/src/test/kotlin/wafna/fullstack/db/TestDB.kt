@@ -23,11 +23,14 @@ data class Thingy(val id: UUID, val name: String?) {
     companion object {
         val projection = projection<Thingy>(
             tableName = "testing.thingy",
-            fieldNameConverter = object : FieldNameConverter {
-                override fun toColumnName(name: String): String =
-                    CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, name)
-            })
+            fieldNameConverter = camelToSnake
+        )
     }
+}
+
+val camelToSnake = object : FieldNameConverter {
+    override fun toColumnName(name: String): String =
+        CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, name)
 }
 
 fun <T> List<T>.optional(): T? = when {
@@ -49,7 +52,7 @@ fun List<Int>.assertUpdates(count: Int) {
  */
 class TestDB internal constructor(private val db: Database) {
     private val selector = Thingy.projection.selectSql("ss")
-    suspend fun list(): List<Thingy> {
+    suspend fun selectAll(): List<Thingy> {
         return db.transact {
             selectRecords<Thingy>(selector)().read { Thingy.projection.read(it) }
         }
@@ -60,7 +63,7 @@ class TestDB internal constructor(private val db: Database) {
             .invoke { Thingy.projection.write(it) }.assertUpdates(thingies.size)
     }
 
-    suspend fun byId(id: UUID): Thingy? = db.transact {
+    suspend fun selectById(id: UUID): Thingy? = db.transact {
         selectRecords<Thingy>("$selector WHERE id = ?")(id).read { Thingy.projection.read(it) }.optional()
     }
 

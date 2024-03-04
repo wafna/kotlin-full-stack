@@ -11,11 +11,11 @@ class DatabaseSpec {
     @Test
     fun testDB() {
         withH2TestDB { db ->
-            db.list().shouldBeEmpty()
+            db.selectAll().shouldBeEmpty()
             val thingy = Thingy(UUID.randomUUID(), "Smith")
             withClue("insert one") {
                 db.insert(thingy)
-                db.list().let { servers ->
+                db.selectAll().let { servers ->
                     servers.size shouldBe 1
                     servers.first().apply {
                         id shouldBe thingy.id
@@ -26,36 +26,36 @@ class DatabaseSpec {
             withClue("update") {
                 val newName = "Jones"
                 db.update(thingy.id, newName)
-                db.list().let { servers ->
+                db.selectAll().let { servers ->
                     servers.size shouldBe 1
                     servers.first().apply {
                         id shouldBe thingy.id
                         name shouldBe newName
                     }
                 }
-                db.byId(thingy.id)!!.apply {
+                db.selectById(thingy.id)!!.apply {
                     id shouldBe thingy.id
                     name shouldBe newName
                 }
             }
             withClue("null") {
                 db.update(thingy.id, null)
-                db.byId(thingy.id)!!.apply {
+                db.selectById(thingy.id)!!.apply {
                     id shouldBe thingy.id
                     name.shouldBeNull()
                 }
             }
             withClue("not found") {
-                db.byId(UUID.randomUUID()).shouldBeNull()
+                db.selectById(UUID.randomUUID()).shouldBeNull()
             }
             withClue("delete") {
                 db.delete(thingy.id)
-                db.list().shouldBeEmpty()
+                db.selectAll().shouldBeEmpty()
             }
             withClue("insert many") {
                 val thingies = listOf("Bob", "Carol", "Ted", "Alice").map { Thingy(UUID.randomUUID(), it) }
                 db.insert(* thingies.toTypedArray())
-                db.list().size shouldBe thingies.size
+                db.selectAll().size shouldBe thingies.size
             }
         }
     }
