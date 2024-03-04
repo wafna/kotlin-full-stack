@@ -50,7 +50,7 @@ fun List<Int>.assertUpdates(count: Int) {
  */
 class TestDB internal constructor(private val db: Database) {
     suspend fun list(): List<Thingy> = db.transact {
-        select(Thingy.projection, "ss", "")
+        select(Thingy.projection, "ss", "")()
     }
 
     suspend fun insert(vararg thingies: Thingy): Unit = db.autoCommit {
@@ -58,15 +58,15 @@ class TestDB internal constructor(private val db: Database) {
     }
 
     suspend fun byId(id: UUID): Thingy? = db.transact {
-        select(Thingy.projection, "ss", "WHERE id = ?", id).optional()
+        select(Thingy.projection, "ss", "WHERE id = ?")(id).optional()
     }
 
     suspend fun update(id: UUID, name: String): Unit = db.transact {
-        update("UPDATE ${Thingy.projection.tableName} SET name = ? WHERE id = ?", name, id).unique()
+        update("UPDATE ${Thingy.projection.tableName} SET name = ? WHERE id = ?")(name, id).unique()
     }
 
     suspend fun delete(id: UUID): Unit = db.transact {
-        delete(Thingy.projection, "id = ?", id).unique()
+        delete(Thingy.projection, "id = ?")(id).unique()
     }
 }
 

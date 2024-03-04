@@ -46,20 +46,28 @@ class Database(private val dataSource: DataSource) {
 /**
  * Formulates a SELECT statement with the projection and table at the head.
  */
-fun <T> Connection.select(projection: Projection<T>, alias: String, sql: String, vararg params: Any?): List<T> =
-    withStatement(
-        """SELECT ${projection.alias(alias)}
-        |FROM ${projection.tableName}${if (alias.isBlank()) "" else " AS $alias"}
-        |$sql""".trimMargin()
-    ) {
-        setParams(* params)
-        readRecords { projection.read(it) }
+fun <T> Connection.select(projection: Projection<T>, alias: String, sql: String): ParamCollector<List<T>> =
+    object : ParamCollector<List<T>>() {
+        override fun invoke(vararg params: Any?): List<T> {
+            return withStatement(
+                """SELECT ${projection.alias(alias)}
+                |FROM ${projection.tableName}${if (alias.isBlank()) "" else " AS $alias"}
+                |$sql""".trimMargin()
+            ) {
+                setParams(params.toList())
+                readRecords { projection.read(it) }
+            }
+        }
     }
 
-fun <T> Connection.selectCustom(projection: Projection<T>, sql: String, vararg params: Any?): List<T> =
-    withStatement(sql) {
-        setParams(* params)
-        readRecords { projection.read(it) }
+fun <T> Connection.selectCustom(projection: Projection<T>, sql: String): ParamCollector<List<T>> =
+    object : ParamCollector<List<T>>() {
+        override fun invoke(vararg params: Any?): List<T> {
+            return withStatement(sql) {
+                setParams(params.toList())
+                readRecords { projection.read(it) }
+            }
+        }
     }
 
 /**
@@ -69,34 +77,42 @@ fun <T> Connection.insert(projection: Projection<T>, records: List<T>): List<Int
     withStatement("INSERT INTO ${projection.tableName} (${projection.alias()}) VALUES ${projection.inList()}") {
         records.forEach { record ->
             val values = projection.write(record)
-            values.forEachIndexed { index, value ->
-                setObject(index + 1, value)
-            }
+            setParams(values)
             addBatch()
         }
         executeBatch().toList()
     }
 
-fun Connection.update(sql: String, vararg params: Any): Int =
-    withStatement(sql) {
-        params.forEachIndexed { index, param ->
-            setObject(index + 1, param)
+/**
+ * Updates are just free form non-selects.
+ */
+fun Connection.update(sql: String): ParamCollector<Int> =
+    object : ParamCollector<Int>() {
+        override fun invoke(vararg params: Any?): Int {
+            return withStatement(sql) {
+                setParams(params.toList())
+                executeUpdate()
+            }
         }
-        executeUpdate()
     }
 
-fun <T> Connection.delete(projection: Projection<T>, sql: String, vararg params: Any): Int =
-    withStatement("DELETE FROM ${projection.tableName} WHERE $sql") {
-        params.forEachIndexed { index, param ->
-            setObject(index + 1, param)
+/**
+ * Formulates a DELETE on the table.
+ */
+fun <T> Connection.delete(projection: Projection<T>, sql: String): ParamCollector<Int> =
+    object : ParamCollector<Int>() {
+        override fun invoke(vararg params: Any?): Int {
+            return withStatement("DELETE FROM ${projection.tableName} WHERE $sql") {
+                setParams(params.toList())
+                executeUpdate()
+            }
         }
-        executeUpdate()
     }
 
 private inline fun <T> Connection.withStatement(sql: String, borrow: PreparedStatement.() -> T) =
     prepareStatement(sql).use { it.borrow() }
 
-private fun PreparedStatement.setParams(vararg params: Any?) {
+private fun PreparedStatement.setParams(params: List<Any?>) {
     params.forEachIndexed { index, param ->
         val place = index + 1
         Either.catch {
@@ -117,3 +133,11 @@ private fun <R> PreparedStatement.readRecords(reader: (ResultSet) -> R): List<R>
         }
     }
 }
+
+/**
+ * Provides the syntax that separates the SQL from the parameters.
+ */
+abstract class ParamCollector<T> internal constructor() {
+    abstract operator fun invoke(vararg params: Any?): T
+}
+
