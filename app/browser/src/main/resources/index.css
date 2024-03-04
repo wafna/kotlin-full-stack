@@ -1,0 +1,36 @@
+body {
+    margin-left: 5%;
+    margin-right: 5%;
+}
+
+.clickable {
+    cursor: pointer
+}
+
+.float-left {
+    float: left
+}
+
+.float-right {
+    float: right;
+}
+
+.flow-down {
+    float: bottom;
+}
+
+.spinner {
+    padding: 1px;
+    margin: 0;
+    align-content: center;
+    font-size: smaller;
+}
+
+.sort-control-box {
+    margin-right: 8px;
+}
+
+.gridley-header {
+    vertical-align: center;
+    /*margin: 0 auto;*/
+}
