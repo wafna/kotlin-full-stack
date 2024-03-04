@@ -1,5 +1,3 @@
-@file:Suppress("import-ordering")
-
 package wafna.fullstack.db
 
 import javax.sql.DataSource
