@@ -33,9 +33,7 @@ class DomainResultSpec {
     @Test
     fun `domainResult should rethrow CancellationException`(): Unit = runBlocking {
         shouldThrow<CancellationException> {
-            runBlocking {
-                domainResult { throw CancellationException() }
-            }
+            domainResult { throw CancellationException() }
         }
     }
 }
