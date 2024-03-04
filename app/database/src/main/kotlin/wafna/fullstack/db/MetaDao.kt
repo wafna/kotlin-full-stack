@@ -105,7 +105,7 @@ internal fun metaDAO(dataSource: DataSource) = object : MetaDao {
     ): DomainResult<List<Index>> = domainResult {
         dataSource.transact {
             selectRecords<Index>(
-                "${indexes.selectSql("ixs")} WHERE ixs.table_schema = ? AND ixs.table_name = ?"
+                "${indexes.selectSql("ixs")} WHERE ixs.schemaname = ? AND ixs.tablename = ?"
             )(
                 schemaName,
                 tableName
@@ -121,12 +121,6 @@ internal fun metaDAO(dataSource: DataSource) = object : MetaDao {
             selectRecords<ForeignKey>(foreignKeys(FKDirection.FROM))(
                 schemaName, tableName
             ).read(foreignKeys)
-//            selectCustom(
-//                foreignKeys,
-//                foreignKeys(FKDirection.FROM),
-//                schemaName,
-//                tableName
-//            )
         }
     }
 
@@ -138,12 +132,6 @@ internal fun metaDAO(dataSource: DataSource) = object : MetaDao {
             selectRecords<ForeignKey>(foreignKeys(FKDirection.TO))(
                 schemaName, tableName
             ).read(foreignKeys)
-//            selectCustom(
-//                foreignKeys,
-//                foreignKeys(FKDirection.TO),
-//                schemaName,
-//                tableName
-//            )
         }
     }
 }
