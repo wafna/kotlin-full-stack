@@ -10,7 +10,7 @@ import kotlin.reflect.jvm.javaType
  * Defines operations for reading and writing domain objects.
  * Note that writing is optional.
  */
-abstract class Projection<T>(val tableName: String): ResultSetReader<T>() {
+abstract class Projection<T>(val tableName: String): RecordReader<T>, BatchWriter<T> {
     abstract val columnNames: List<String>
 
     fun alias(prefix: String? = null): String = when {
@@ -20,8 +20,6 @@ abstract class Projection<T>(val tableName: String): ResultSetReader<T>() {
 
     fun inList(): String = "(${List(columnNames.size) { "?" }.joinToString(", ")})"
 
-    abstract fun write(value: T): List<Any>
-
     fun selectSql(alias: String): String = "SELECT ${alias(alias)} FROM $tableName AS $alias"
 
     fun deleteSql(): String = "DELETE FROM $tableName WHERE"
@@ -29,6 +27,7 @@ abstract class Projection<T>(val tableName: String): ResultSetReader<T>() {
 
 /**
  * Create a projection from the given column names.
+ * The given column names must align with the fields of the object, i.e. the data class' primary constructor.
  */
 inline fun <reified T : Any> projection(tableName: String, columnNames: List<String>): Projection<T> {
     val type = T::class
@@ -96,11 +95,11 @@ internal fun <T : Any> projection(
             return ctor.call(*values.toTypedArray())
         }
 
-        override fun write(value: T): List<Any> =
+        override fun write(record: T): List<Any> =
             ctorParamNames.map { paramName ->
-                value.javaClass.getDeclaredField(paramName).run {
+                record.javaClass.getDeclaredField(paramName).run {
                     isAccessible = true
-                    get(value)
+                    get(record)
                 }
             }
     }

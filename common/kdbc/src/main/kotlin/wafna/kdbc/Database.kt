@@ -41,9 +41,6 @@ suspend fun <T> DataSource.autoCommit(borrow: suspend Connection.() -> T): T =
         }
     }
 
-/**
- * Formulates a SELECT statement with the projection and table at the head.
- */
 fun <T> Connection.selectRecords(sql: String): SelectParamCollector<T> =
     object : SelectParamCollector<T>() {
         override fun invoke(vararg params: Any?): ResultSetReceiver<T> =
@@ -51,7 +48,7 @@ fun <T> Connection.selectRecords(sql: String): SelectParamCollector<T> =
                 override fun read(read: (ResultSet) -> T): List<T> =
                     doSelect(sql, params.toList(), read)
 
-                override fun read(reader: ResultSetReader<T>): List<T> =
+                override fun read(reader: RecordReader<T>): List<T> =
                     doSelect(sql, params.toList()) { reader.read(it) }
             }
     }
@@ -69,29 +66,33 @@ private fun <T> Connection.doSelect(sql: String, params: List<Any?>, reader: (Re
     }
 
 
-/**
- * Formulates an INSERT and batches the records.
- */
 fun <T> Connection.insertRecords(tableName: String, fieldNames: List<String>, records: List<T>): BatchReceiver<T> =
     object : BatchReceiver<T>() {
-        override operator fun invoke(writer: (T) -> List<Any?>) =
-            withStatement(
-                "INSERT INTO $tableName (${fieldNames.joinToString(", ")}) VALUES (${
-                    List(fieldNames.size) { "?" }.joinToString(", ")
-                })"
-            ) {
-                records.forEach { record ->
-                    val values = writer(record)
-                    setParams(values)
-                    addBatch()
-                }
-                executeBatch().toList()
-            }
+        override fun write(write: (T) -> List<Any?>) =
+            doInsert(tableName, fieldNames, records, write)
+
+        override fun write(writer: BatchWriter<T>): List<Int> =
+            doInsert(tableName, fieldNames, records) { writer.write(it) }
     }
 
-/**
- * Updates are just free form non-selects.
- */
+private fun <T> Connection.doInsert(
+    tableName: String,
+    fieldNames: List<String>,
+    records: List<T>,
+    writer: (T) -> List<Any?>
+): List<Int> = withStatement(
+    "INSERT INTO $tableName (${fieldNames.joinToString(", ")}) VALUES (${
+        List(fieldNames.size) { "?" }.joinToString(", ")
+    })"
+) {
+    records.forEach { record ->
+        val values = writer(record)
+        setParams(values)
+        addBatch()
+    }
+    executeBatch().toList()
+}
+
 fun Connection.updateRecords(sql: String): ParamCollector<Int> =
     object : ParamCollector<Int>() {
         override fun invoke(vararg params: Any?): Int {
@@ -117,31 +118,4 @@ private fun PreparedStatement.setParams(params: List<Any?>) {
             throw IllegalArgumentException("Error setting parameter $place to $param", e)
         }
     }
-}
-
-/**
- * Provides the syntax that separates the SQL from the parameters.
- */
-abstract class ParamCollector<T> internal constructor() {
-    abstract operator fun invoke(vararg params: Any?): T
-}
-
-/**
- * Collects parameters with a follow-on reader.
- */
-abstract class SelectParamCollector<T> internal constructor() {
-    abstract operator fun invoke(vararg params: Any?): ResultSetReceiver<T>
-}
-
-abstract class BatchReceiver<T> {
-    abstract operator fun invoke(writer: (T) -> List<Any?>): List<Int>
-}
-
-abstract class ResultSetReceiver<T> {
-    abstract fun read(read: (ResultSet) -> T): List<T>
-    abstract fun read(reader: ResultSetReader<T>): List<T>
-}
-
-abstract class ResultSetReader<T> {
-    abstract fun read(resultSet: ResultSet): T
 }

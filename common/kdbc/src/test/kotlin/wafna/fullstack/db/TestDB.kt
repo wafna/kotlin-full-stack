@@ -52,28 +52,29 @@ fun List<Int>.assertUpdates(count: Int) {
  * Mixes transact and autoCommit to test both.
  */
 class TestDB internal constructor(private val db: DataSource) {
-    private val selector = Thingy.projection.selectSql("ss")
+    private val projection = Thingy.projection
+    private val selector = projection.selectSql("ss")
     suspend fun selectAll(): List<Thingy> {
-        return db.transact {
-            selectRecords<Thingy>(selector)().read { Thingy.projection.read(it) }
+        return db.autoCommit {
+            selectRecords<Thingy>(selector)().read(projection)
         }
     }
 
-    suspend fun insert(vararg thingies: Thingy): Unit = db.autoCommit {
-        insertRecords(Thingy.projection.tableName, Thingy.projection.columnNames, thingies.toList())
-            .invoke { Thingy.projection.write(it) }.assertUpdates(thingies.size)
+    suspend fun selectById(id: UUID): Thingy? = db.autoCommit {
+        selectRecords<Thingy>("$selector WHERE id = ?")(id).read(projection).optional()
     }
 
-    suspend fun selectById(id: UUID): Thingy? = db.transact {
-        selectRecords<Thingy>("$selector WHERE id = ?")(id).read { Thingy.projection.read(it) }.optional()
+    suspend fun insert(vararg thingies: Thingy): Unit = db.transact {
+        insertRecords(projection.tableName, projection.columnNames, thingies.toList())
+            .write(projection).assertUpdates(thingies.size)
     }
 
     suspend fun update(id: UUID, name: String?): Unit = db.transact {
-        updateRecords("UPDATE ${Thingy.projection.tableName} SET name = ? WHERE id = ?")(name, id).unique()
+        updateRecords("UPDATE ${projection.tableName} SET name = ? WHERE id = ?")(name, id).unique()
     }
 
     suspend fun delete(id: UUID): Unit = db.transact {
-        updateRecords("${Thingy.projection.deleteSql()} id = ?")(id).unique()
+        updateRecords("${projection.deleteSql()} id = ?")(id).unique()
     }
 }
 
