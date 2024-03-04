@@ -46,63 +46,58 @@ class Database(private val dataSource: DataSource) {
 /**
  * Formulates a SELECT statement with the projection and table at the head.
  */
-fun <T> Connection.select(projection: Projection<T>, alias: String, sql: String): ParamCollector<List<T>> =
-    object : ParamCollector<List<T>>() {
-        override fun invoke(vararg params: Any?): List<T> {
-            return withStatement(
-                """SELECT ${projection.alias(alias)}
-                |FROM ${projection.tableName}${if (alias.isBlank()) "" else " AS $alias"}
-                |$sql""".trimMargin()
-            ) {
-                setParams(params.toList())
-                readRecords { projection.read(it) }
+fun <T> Connection.selectRecords(sql: String): SelectParamCollector<T> =
+    object : SelectParamCollector<T>() {
+        override fun invoke(vararg params: Any?): ResultSetReceiver<T> =
+            object : ResultSetReceiver<T>() {
+                override fun read(read: (ResultSet) -> T): List<T> =
+                    doSelect(sql, params.toList(), read)
+
+                override fun read(reader: ResultSetReader<T>): List<T> =
+                    doSelect(sql, params.toList()) { reader.read(it) }
+            }
+    }
+
+private fun <T> Connection.doSelect(sql: String, params: List<Any?>, reader: (ResultSet) -> T): List<T> =
+    withStatement(sql) {
+        setParams(params)
+        buildList {
+            executeQuery().use { resultSet ->
+                while (resultSet.next()) {
+                    add(reader(resultSet))
+                }
             }
         }
     }
 
-fun <T> Connection.selectCustom(projection: Projection<T>, sql: String): ParamCollector<List<T>> =
-    object : ParamCollector<List<T>>() {
-        override fun invoke(vararg params: Any?): List<T> {
-            return withStatement(sql) {
-                setParams(params.toList())
-                readRecords { projection.read(it) }
-            }
-        }
-    }
 
 /**
  * Formulates an INSERT and batches the records.
  */
-fun <T> Connection.insert(projection: Projection<T>, records: List<T>): List<Int> =
-    withStatement("INSERT INTO ${projection.tableName} (${projection.alias()}) VALUES ${projection.inList()}") {
-        records.forEach { record ->
-            val values = projection.write(record)
-            setParams(values)
-            addBatch()
-        }
-        executeBatch().toList()
+fun <T> Connection.insertRecords(tableName: String, fieldNames: List<String>, records: List<T>): BatchReceiver<T> =
+    object : BatchReceiver<T>() {
+        override operator fun invoke(writer: (T) -> List<Any?>) =
+            withStatement(
+                "INSERT INTO $tableName (${fieldNames.joinToString(", ")}) VALUES (${
+                    List(fieldNames.size) { "?" }.joinToString(", ")
+                })"
+            ) {
+                records.forEach { record ->
+                    val values = writer(record)
+                    setParams(values)
+                    addBatch()
+                }
+                executeBatch().toList()
+            }
     }
 
 /**
  * Updates are just free form non-selects.
  */
-fun Connection.update(sql: String): ParamCollector<Int> =
+fun Connection.updateRecords(sql: String): ParamCollector<Int> =
     object : ParamCollector<Int>() {
         override fun invoke(vararg params: Any?): Int {
             return withStatement(sql) {
-                setParams(params.toList())
-                executeUpdate()
-            }
-        }
-    }
-
-/**
- * Formulates a DELETE on the table.
- */
-fun <T> Connection.delete(projection: Projection<T>, sql: String): ParamCollector<Int> =
-    object : ParamCollector<Int>() {
-        override fun invoke(vararg params: Any?): Int {
-            return withStatement("DELETE FROM ${projection.tableName} WHERE $sql") {
                 setParams(params.toList())
                 executeUpdate()
             }
@@ -126,17 +121,29 @@ private fun PreparedStatement.setParams(params: List<Any?>) {
     }
 }
 
-private fun <R> PreparedStatement.readRecords(reader: (ResultSet) -> R): List<R> = buildList {
-    executeQuery().use { resultSet ->
-        while (resultSet.next()) {
-            add(reader(resultSet))
-        }
-    }
-}
-
 /**
  * Provides the syntax that separates the SQL from the parameters.
  */
 abstract class ParamCollector<T> internal constructor() {
     abstract operator fun invoke(vararg params: Any?): T
+}
+
+/**
+ * Collects parameters with a follow-on reader.
+ */
+abstract class SelectParamCollector<T> internal constructor() {
+    abstract operator fun invoke(vararg params: Any?): ResultSetReceiver<T>
+}
+
+abstract class BatchReceiver<T> {
+    abstract operator fun invoke(writer: (T) -> List<Any?>): List<Int>
+}
+
+abstract class ResultSetReceiver<T> {
+    abstract fun read(read: (ResultSet) -> T): List<T>
+    abstract fun read(reader: ResultSetReader<T>): List<T>
+}
+
+abstract class ResultSetReader<T> {
+    abstract fun read(resultSet: ResultSet): T
 }

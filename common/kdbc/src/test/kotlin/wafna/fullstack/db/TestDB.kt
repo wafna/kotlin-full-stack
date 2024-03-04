@@ -9,11 +9,10 @@ import org.flywaydb.core.api.configuration.FluentConfiguration
 import wafna.fullstack.test.withTestH2DataSource
 import wafna.kdbc.Database
 import wafna.kdbc.FieldNameConverter
-import wafna.kdbc.delete
-import wafna.kdbc.insert
+import wafna.kdbc.insertRecords
 import wafna.kdbc.projection
-import wafna.kdbc.select
-import wafna.kdbc.update
+import wafna.kdbc.selectRecords
+import wafna.kdbc.updateRecords
 import java.util.*
 import javax.sql.DataSource
 
@@ -49,24 +48,28 @@ fun List<Int>.assertUpdates(count: Int) {
  * Mixes transact and autoCommit to test both.
  */
 class TestDB internal constructor(private val db: Database) {
-    suspend fun list(): List<Thingy> = db.transact {
-        select(Thingy.projection, "ss", "")()
+    private val selector = Thingy.projection.selectSql("ss")
+    suspend fun list(): List<Thingy> {
+        return db.transact {
+            selectRecords<Thingy>(selector)().read { Thingy.projection.read(it) }
+        }
     }
 
     suspend fun insert(vararg thingies: Thingy): Unit = db.autoCommit {
-        insert(Thingy.projection, thingies.toList()).assertUpdates(thingies.size)
+        insertRecords(Thingy.projection.tableName, Thingy.projection.columnNames, thingies.toList())
+            .invoke { Thingy.projection.write(it) }.assertUpdates(thingies.size)
     }
 
     suspend fun byId(id: UUID): Thingy? = db.transact {
-        select(Thingy.projection, "ss", "WHERE id = ?")(id).optional()
+        selectRecords<Thingy>("$selector WHERE id = ?")(id).read { Thingy.projection.read(it) }.optional()
     }
 
     suspend fun update(id: UUID, name: String?): Unit = db.transact {
-        update("UPDATE ${Thingy.projection.tableName} SET name = ? WHERE id = ?")(name, id).unique()
+        updateRecords("UPDATE ${Thingy.projection.tableName} SET name = ? WHERE id = ?")(name, id).unique()
     }
 
     suspend fun delete(id: UUID): Unit = db.transact {
-        delete(Thingy.projection, "id = ?")(id).unique()
+        updateRecords("${Thingy.projection.deleteSql()} id = ?")(id).unique()
     }
 }
 
