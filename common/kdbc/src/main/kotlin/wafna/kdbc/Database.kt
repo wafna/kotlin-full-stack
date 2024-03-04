@@ -9,7 +9,7 @@ import javax.sql.DataSource
 class Database(private val dataSource: DataSource) {
     /**
      * Execute the given block within a transaction.
-     * The transaction is committed if the block completes normally, and rolled back if it throws an exception.
+     * The transaction is committed if the block completes normally and rolled back if it throws an exception.
      */
     suspend fun <T> transact(borrow: suspend Connection.() -> T): T =
         dataSource.connection.use { connection ->
@@ -29,7 +29,7 @@ class Database(private val dataSource: DataSource) {
         }
 
     /**
-     * Execute the given block, auto committing along the way.
+     * Execute the given block, auto committing on return.
      */
     suspend fun <T> autoCommit(borrow: suspend Connection.() -> T): T =
         dataSource.connection.use { connection ->
