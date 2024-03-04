@@ -21,7 +21,7 @@ dependencies {
     implementation("io.ktor:ktor-server-content-negotiation:$ktorVersion")
     implementation("io.ktor:ktor-serialization-gson:$ktorVersion")
 
-    api(project(":common:util"))
+    api(project(":common:logger"))
     api(project(":app:database"))
 }
 

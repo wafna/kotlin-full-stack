@@ -12,7 +12,7 @@ import javax.sql.DataSource
 /**
  * Spins up a database container, migrates it, and loans a data source.
  */
-fun withTestPostgresDataSource(borrow: suspend (DataSource) -> Unit) {
+fun withPGContainer(borrow: suspend (DataSource) -> Unit) {
     PostgreSQLContainer(DockerImageName.parse("postgres:15-alpine"))
         .withDatabaseName("integration-test")
         .withUsername("username")

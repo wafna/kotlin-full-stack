@@ -6,12 +6,11 @@ plugins {
 val kotestVersion: String by project
 
 dependencies {
-    implementation(project(":common:util"))
-    testImplementation("com.google.guava:guava:33.0.0-jre")
-    testImplementation("com.h2database:h2:2.2.224")
-    testImplementation("com.zaxxer:HikariCP:5.1.0")
+    implementation(project(":common:logger"))
+    testImplementation(project(":common:test"))
     testImplementation("io.kotest:kotest-runner-junit5-jvm:$kotestVersion")
     testImplementation("io.kotest:kotest-assertions-core:$kotestVersion")
+    testImplementation("com.google.guava:guava:33.0.0-jre")
 }
 
 /*

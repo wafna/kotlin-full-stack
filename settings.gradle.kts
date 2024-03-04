@@ -12,7 +12,7 @@ pluginManagement {
 }
 
 include(
-    "common:util",
+    "common:logger",
     "common:kdbc",
     "common:test",
     "app:domain",
