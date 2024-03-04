@@ -46,13 +46,14 @@ fun List<Int>.assertUpdates(count: Int) {
 
 /**
  * CRUD for thingies.
+ * Mixes transact and autoCommit to test both.
  */
 class TestDB internal constructor(private val db: Database) {
     suspend fun list(): List<Thingy> = db.transact {
         select(Thingy.projection, "ss", "")
     }
 
-    suspend fun insert(vararg thingies: Thingy): Unit = db.transact {
+    suspend fun insert(vararg thingies: Thingy): Unit = db.autoCommit {
         insert(Thingy.projection, thingies.toList()).assertUpdates(thingies.size)
     }
 
@@ -81,6 +82,9 @@ fun testDB(dataSource: DataSource): TestDB {
     return TestDB(Database(dataSource))
 }
 
+/**
+ * Create a TestDB on H2 in memory.
+ */
 fun withH2TestDB(borrow: suspend (TestDB) -> Unit) {
     withTestH2DataSource { dataSource ->
         runBlocking {
@@ -88,4 +92,3 @@ fun withH2TestDB(borrow: suspend (TestDB) -> Unit) {
         }
     }
 }
-
