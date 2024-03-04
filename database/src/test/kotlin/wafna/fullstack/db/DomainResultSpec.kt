@@ -8,16 +8,19 @@ import io.kotest.common.runBlocking
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
+import org.junit.jupiter.api.Test
 import wafna.fullstack.domain.errors.DomainError
 import kotlin.coroutines.cancellation.CancellationException
 
-class DomainResultSpec : StringSpec({
-    "domainResult should return right when block does not throw" {
+class DomainResultSpec {
+    @Test
+    fun `domainResult should return right when block does not throw`(): Unit = runBlocking {
         val result = domainResult { 42 }
         result shouldBe 42.right()
     }
 
-    "domainResult should return left when block throws" {
+    @Test
+    fun `domainResult should return left when block throws`(): Unit = runBlocking {
         when (val result = domainResult { throw RuntimeException("wafna/fullstack/test") }) {
             is Either.Left ->
                 result.value.shouldBeInstanceOf<DomainError.InternalServerError>()
@@ -27,11 +30,12 @@ class DomainResultSpec : StringSpec({
         }
     }
 
-    "domainResult should rethrow CancellationException" {
+    @Test
+    fun `domainResult should rethrow CancellationException`(): Unit = runBlocking {
         shouldThrow<CancellationException> {
             runBlocking {
                 domainResult { throw CancellationException() }
             }
         }
     }
-})
+}

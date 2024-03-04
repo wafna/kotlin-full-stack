@@ -2,7 +2,7 @@ package wafna.fullstack.test
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
-import kotlinx.coroutines.runBlocking
+import io.kotest.common.runBlocking
 import org.flywaydb.core.Flyway
 import org.flywaydb.core.api.configuration.FluentConfiguration
 import org.testcontainers.containers.PostgreSQLContainer
@@ -12,7 +12,7 @@ import javax.sql.DataSource
 /**
  * Spins up a database container, migrates it, and loans a data source.
  */
-fun withTestDataSource(borrow: suspend (DataSource) -> Unit) {
+fun withTestPostgresDataSource(borrow: suspend (DataSource) -> Unit) {
     PostgreSQLContainer(DockerImageName.parse("postgres:15-alpine"))
         .withDatabaseName("integration-test")
         .withUsername("username")

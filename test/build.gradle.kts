@@ -10,4 +10,5 @@ dependencies {
     implementation("org.testcontainers:postgresql:1.19.6")
     implementation("org.flywaydb:flyway-core:10.8.1")
     implementation("org.flywaydb:flyway-database-postgresql:10.8.1")
+    implementation("io.kotest:kotest-runner-junit5-jvm:$kotestVersion")
 }

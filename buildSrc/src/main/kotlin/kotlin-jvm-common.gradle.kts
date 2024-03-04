@@ -31,7 +31,14 @@ tasks {
     withType<KotlinCompile> {
         kotlinOptions.freeCompilerArgs = listOf("-Xcontext-receivers")
     }
-    withType<Test>().configureEach {
-        useJUnitPlatform()
+}
+
+testing {
+    suites {
+        // Configure the built-in test suite
+        val test by getting(JvmTestSuite::class) {
+            // Use JUnit Jupiter test framework
+            useJUnitJupiter("5.10.0")
+        }
     }
 }

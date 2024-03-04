@@ -1,12 +1,15 @@
 package wafna.fullstack.db
 
 import com.google.common.base.CaseFormat
+import com.zaxxer.hikari.HikariConfig
+import com.zaxxer.hikari.HikariDataSource
 import io.kotest.assertions.fail
-import io.kotest.core.spec.style.StringSpec
+import io.kotest.common.runBlocking
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
-import wafna.fullstack.test.withTestDataSource
+import org.junit.jupiter.api.Test
+import wafna.fullstack.test.withTestPostgresDataSource
 import wafna.kdbc.Database
 import wafna.kdbc.FieldNameConverter
 import wafna.kdbc.delete
@@ -15,6 +18,7 @@ import wafna.kdbc.projection
 import wafna.kdbc.select
 import wafna.kdbc.update
 import java.util.*
+import javax.sql.DataSource
 
 /**
  * The sole domain object.
@@ -68,14 +72,34 @@ class TestDB internal constructor(private val db: Database) {
     }
 }
 
+suspend fun withTestH2DataSource(borrow: suspend (DataSource) -> Unit) {
+    HikariConfig()
+        .apply {
+            jdbcUrl = "jdbc:h2:mem:"
+            username = "sa"
+            password = ""
+            driverClassName = org.h2.Driver::class.java.canonicalName
+        }.let {
+            HikariDataSource(it)
+        }.use {
+            borrow(it)
+        }
+}
+
 suspend fun withTestDB(borrow: suspend (TestDB) -> Unit) {
-    withTestDataSource { dataSource ->
-        borrow(TestDB(Database(dataSource)))
+    withTestH2DataSource { dataSource ->
+        val db = Database(dataSource)
+        db.autoCommit {
+            update("CREATE SCHEMA testing")
+            update("CREATE TABLE testing.thingy(id UUID, name TEXT)")
+        }
+        borrow(TestDB(db))
     }
 }
 
-class DatabaseSpec : StringSpec({
-    "select, insert, update" {
+class DatabaseSpec  {
+    @Test
+    fun testDB() = runBlocking {
         withTestDB { db ->
             db.list().shouldBeEmpty()
             val thingy = Thingy(UUID.randomUUID(), "Smith")
@@ -108,4 +132,4 @@ class DatabaseSpec : StringSpec({
             db.list().size shouldBe thingies.size
         }
     }
-})
+}
