@@ -7,11 +7,12 @@ import io.kotest.matchers.shouldBe
 import org.flywaydb.core.Flyway
 import org.flywaydb.core.api.configuration.FluentConfiguration
 import wafna.fullstack.test.withTestH2DataSource
-import wafna.kdbc.Database
 import wafna.kdbc.FieldNameConverter
+import wafna.kdbc.autoCommit
 import wafna.kdbc.insertRecords
 import wafna.kdbc.projection
 import wafna.kdbc.selectRecords
+import wafna.kdbc.transact
 import wafna.kdbc.updateRecords
 import java.util.*
 import javax.sql.DataSource
@@ -50,7 +51,7 @@ fun List<Int>.assertUpdates(count: Int) {
  * CRUD for thingies.
  * Mixes transact and autoCommit to test both.
  */
-class TestDB internal constructor(private val db: Database) {
+class TestDB internal constructor(private val db: DataSource) {
     private val selector = Thingy.projection.selectSql("ss")
     suspend fun selectAll(): List<Thingy> {
         return db.transact {
@@ -85,7 +86,7 @@ fun testDB(dataSource: DataSource): TestDB {
             .dataSource(dataSource)
             .locations("classpath:db/migrations")
     ).migrate()
-    return TestDB(Database(dataSource))
+    return TestDB(dataSource)
 }
 
 /**

@@ -15,8 +15,9 @@ import wafna.fullstack.domain.Table
 import wafna.fullstack.domain.TableConstraint
 import wafna.fullstack.domain.View
 import wafna.fullstack.domain.errors.DomainResult
-import wafna.kdbc.Database
 import wafna.kdbc.selectRecords
+import wafna.kdbc.transact
+import javax.sql.DataSource
 
 interface MetaDao {
     suspend fun listSchemas(): DomainResult<List<Schema>>
@@ -30,10 +31,9 @@ interface MetaDao {
     suspend fun listForeignKeyRefs(schemaName: String, tableName: String): DomainResult<List<ForeignKey>>
 }
 
-context (Database)
-internal fun metaDAO() = object : MetaDao {
+internal fun metaDAO(dataSource: DataSource) = object : MetaDao {
     override suspend fun listSchemas(): DomainResult<List<Schema>> = domainResult {
-        transact {
+        dataSource.transact {
             selectRecords<Schema>(schemas.selectSql("ss"))().read(schemas)
         }
     }
@@ -41,7 +41,7 @@ internal fun metaDAO() = object : MetaDao {
     override suspend fun listTables(
         schemaName: String
     ): DomainResult<List<Table>> = domainResult {
-        transact {
+        dataSource.transact {
             selectRecords<Table>("${tables.selectSql("ts")} WHERE ts.table_schema = ?")(schemaName)
                 .read(tables)
         }
@@ -51,7 +51,7 @@ internal fun metaDAO() = object : MetaDao {
         schemaName: String,
         tableName: String
     ): DomainResult<Table?> = domainResult {
-        transact {
+        dataSource.transact {
             selectRecords<Table>(
                 "${tables.selectSql("ts")} WHERE ts.table_schema = ? AND ts.table_name = ?"
             )(
@@ -65,7 +65,7 @@ internal fun metaDAO() = object : MetaDao {
     override suspend fun listViews(
         schemaName: String
     ): DomainResult<List<View>> = domainResult {
-        transact {
+        dataSource.transact {
             selectRecords<View>("${views.selectSql("vs")} WHERE vs.table_schema = ?")(schemaName)
                 .read(views)
         }
@@ -75,7 +75,7 @@ internal fun metaDAO() = object : MetaDao {
         schemaName: String,
         tableName: String
     ): DomainResult<List<Column>> = domainResult {
-        transact {
+        dataSource.transact {
             selectRecords<Column>(
                 "${columns.selectSql("cs")} WHERE cs.table_schema = ? AND cs.table_name = ?"
             )(
@@ -89,7 +89,7 @@ internal fun metaDAO() = object : MetaDao {
         schemaName: String,
         tableName: String
     ): DomainResult<List<TableConstraint>> = domainResult {
-        transact {
+        dataSource.transact {
             selectRecords<TableConstraint>(
                 "${tableConstraints.selectSql("tcs")} WHERE tcs.table_schema = ? AND tcs.table_name = ?"
             )(
@@ -103,7 +103,7 @@ internal fun metaDAO() = object : MetaDao {
         schemaName: String,
         tableName: String
     ): DomainResult<List<Index>> = domainResult {
-        transact {
+        dataSource.transact {
             selectRecords<Index>(
                 "${indexes.selectSql("ixs")} WHERE ixs.table_schema = ? AND ixs.table_name = ?"
             )(
@@ -117,7 +117,7 @@ internal fun metaDAO() = object : MetaDao {
         schemaName: String,
         tableName: String
     ): DomainResult<List<ForeignKey>> = domainResult {
-        transact {
+        dataSource.transact {
             selectRecords<ForeignKey>(foreignKeys(FKDirection.FROM))(
                 schemaName, tableName
             ).read(foreignKeys)
@@ -134,7 +134,7 @@ internal fun metaDAO() = object : MetaDao {
         schemaName: String,
         tableName: String
     ): DomainResult<List<ForeignKey>> = domainResult {
-        transact {
+        dataSource.transact {
             selectRecords<ForeignKey>(foreignKeys(FKDirection.TO))(
                 schemaName, tableName
             ).read(foreignKeys)

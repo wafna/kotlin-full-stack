@@ -6,42 +6,40 @@ import java.sql.PreparedStatement
 import java.sql.ResultSet
 import javax.sql.DataSource
 
-class Database(private val dataSource: DataSource) {
-    /**
-     * Execute the given block within a transaction.
-     * The transaction is committed if the block completes normally and rolled back if it throws an exception.
-     */
-    suspend fun <T> transact(borrow: suspend Connection.() -> T): T =
-        dataSource.connection.use { connection ->
-            connection.autoCommit = false
-            connection.beginRequest()
-            try {
-                return connection.borrow().also {
-                    connection.commit()
-                }
-            } catch (e: Throwable) {
-                // Ok to catch CancellationExceptions here because we're about to rethrow them.
-                connection.rollback()
-                throw e
-            } finally {
-                connection.endRequest()
+/**
+ * Execute the given block within a transaction.
+ * The transaction is committed if the block completes normally and rolled back if it throws an exception.
+ */
+suspend fun <T> DataSource.transact(borrow: suspend Connection.() -> T): T =
+    connection.use { connection ->
+        connection.autoCommit = false
+        connection.beginRequest()
+        try {
+            return connection.borrow().also {
+                connection.commit()
             }
+        } catch (e: Throwable) {
+            // Ok to catch CancellationExceptions here because we're about to rethrow them.
+            connection.rollback()
+            throw e
+        } finally {
+            connection.endRequest()
         }
+    }
 
-    /**
-     * Execute the given block, auto committing on return.
-     */
-    suspend fun <T> autoCommit(borrow: suspend Connection.() -> T): T =
-        dataSource.connection.use { connection ->
-            connection.autoCommit = true
-            connection.beginRequest()
-            try {
-                return connection.borrow()
-            } finally {
-                connection.endRequest()
-            }
+/**
+ * Execute the given block, auto committing on return.
+ */
+suspend fun <T> DataSource.autoCommit(borrow: suspend Connection.() -> T): T =
+    connection.use { connection ->
+        connection.autoCommit = true
+        connection.beginRequest()
+        try {
+            return connection.borrow()
+        } finally {
+            connection.endRequest()
         }
-}
+    }
 
 /**
  * Formulates a SELECT statement with the projection and table at the head.
