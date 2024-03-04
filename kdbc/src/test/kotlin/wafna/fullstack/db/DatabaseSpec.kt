@@ -9,7 +9,6 @@ import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
-import wafna.fullstack.test.withTestPostgresDataSource
 import wafna.kdbc.Database
 import wafna.kdbc.FieldNameConverter
 import wafna.kdbc.delete
