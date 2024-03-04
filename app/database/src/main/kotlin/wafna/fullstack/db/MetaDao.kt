@@ -15,6 +15,7 @@ import wafna.fullstack.domain.Table
 import wafna.fullstack.domain.TableConstraint
 import wafna.fullstack.domain.View
 import wafna.fullstack.domain.errors.DomainResult
+import wafna.kdbc.autoCommit
 import wafna.kdbc.selectRecords
 import wafna.kdbc.transact
 import javax.sql.DataSource
@@ -33,7 +34,7 @@ interface MetaDao {
 
 internal fun metaDAO(dataSource: DataSource) = object : MetaDao {
     override suspend fun listSchemas(): DomainResult<List<Schema>> = domainResult {
-        dataSource.transact {
+        dataSource.autoCommit {
             selectRecords<Schema>(schemas.selectSql("ss"))().read(schemas)
         }
     }
@@ -41,7 +42,7 @@ internal fun metaDAO(dataSource: DataSource) = object : MetaDao {
     override suspend fun listTables(
         schemaName: String
     ): DomainResult<List<Table>> = domainResult {
-        dataSource.transact {
+        dataSource.autoCommit {
             selectRecords<Table>("${tables.selectSql("ts")} WHERE ts.table_schema = ?")(schemaName)
                 .read(tables)
         }
@@ -51,21 +52,19 @@ internal fun metaDAO(dataSource: DataSource) = object : MetaDao {
         schemaName: String,
         tableName: String
     ): DomainResult<Table?> = domainResult {
-        dataSource.transact {
+        dataSource.autoCommit {
             selectRecords<Table>(
                 "${tables.selectSql("ts")} WHERE ts.table_schema = ? AND ts.table_name = ?"
             )(
-                schemaName,
-                tableName
-            )
-                .read(tables).firstOrNull()
+                schemaName, tableName
+            ).read(tables).firstOrNull()
         }
     }
 
     override suspend fun listViews(
         schemaName: String
     ): DomainResult<List<View>> = domainResult {
-        dataSource.transact {
+        dataSource.autoCommit {
             selectRecords<View>("${views.selectSql("vs")} WHERE vs.table_schema = ?")(schemaName)
                 .read(views)
         }
@@ -75,12 +74,11 @@ internal fun metaDAO(dataSource: DataSource) = object : MetaDao {
         schemaName: String,
         tableName: String
     ): DomainResult<List<Column>> = domainResult {
-        dataSource.transact {
+        dataSource.autoCommit {
             selectRecords<Column>(
                 "${columns.selectSql("cs")} WHERE cs.table_schema = ? AND cs.table_name = ?"
             )(
-                schemaName,
-                tableName
+                schemaName, tableName
             ).read(columns)
         }
     }
@@ -89,12 +87,11 @@ internal fun metaDAO(dataSource: DataSource) = object : MetaDao {
         schemaName: String,
         tableName: String
     ): DomainResult<List<TableConstraint>> = domainResult {
-        dataSource.transact {
+        dataSource.autoCommit {
             selectRecords<TableConstraint>(
                 "${tableConstraints.selectSql("tcs")} WHERE tcs.table_schema = ? AND tcs.table_name = ?"
             )(
-                schemaName,
-                tableName
+                schemaName, tableName
             ).read(tableConstraints)
         }
     }
@@ -103,12 +100,11 @@ internal fun metaDAO(dataSource: DataSource) = object : MetaDao {
         schemaName: String,
         tableName: String
     ): DomainResult<List<Index>> = domainResult {
-        dataSource.transact {
+        dataSource.autoCommit {
             selectRecords<Index>(
                 "${indexes.selectSql("ixs")} WHERE ixs.schemaname = ? AND ixs.tablename = ?"
             )(
-                schemaName,
-                tableName
+                schemaName, tableName
             ).read(indexes)
         }
     }
@@ -117,7 +113,7 @@ internal fun metaDAO(dataSource: DataSource) = object : MetaDao {
         schemaName: String,
         tableName: String
     ): DomainResult<List<ForeignKey>> = domainResult {
-        dataSource.transact {
+        dataSource.autoCommit {
             selectRecords<ForeignKey>(foreignKeys(FKDirection.FROM))(
                 schemaName, tableName
             ).read(foreignKeys)
@@ -128,7 +124,7 @@ internal fun metaDAO(dataSource: DataSource) = object : MetaDao {
         schemaName: String,
         tableName: String
     ): DomainResult<List<ForeignKey>> = domainResult {
-        dataSource.transact {
+        dataSource.autoCommit {
             selectRecords<ForeignKey>(foreignKeys(FKDirection.TO))(
                 schemaName, tableName
             ).read(foreignKeys)
