@@ -12,11 +12,11 @@ pluginManagement {
 }
 
 include(
-    "util",
-    "kdbc",
-    "domain",
-    "database",
-    "server",
-    "browser",
-    "test"
+    "common:util",
+    "common:kdbc",
+    "common:test",
+    "app:domain",
+    "app:database",
+    "app:server",
+    "app:browser"
 )

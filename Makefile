@@ -8,9 +8,6 @@ spiff: FORCE
 test: FORCE
 	@./gradlew test
 
-integration-test: FORCE
-	@./gradlew integrationTest
-
 clean: FORCE
 	@./gradlew clean
 
@@ -21,10 +18,10 @@ rebuild: clean
 
 # CONFIG_FILE=../demo/config.yml make run-server
 run-server: FORCE
-	@./gradlew :server:run
+	@./gradlew :app:server:run
 
 run-browser: FORCE
-	@./gradlew :browser:browserDevelopmentRun --continuous
+	@./gradlew :app:browser:browserDevelopmentRun --continuous
 
 # Util.
 

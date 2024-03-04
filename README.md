@@ -6,16 +6,16 @@ The web application introspects the target database.
 
 Includes Flyway, Ktor, Kotlin/JS, React, docker-compose, and integration tests with Postgres containers.
 
-| Sub-project                      | Description                                     |
-|----------------------------------|-------------------------------------------------|
-| [util](./util/README.md)         | Shared code.                                    |
-| [kdbc](./kdbc/README.md)         | Light weight JDBC wrapper.                      |
-| [domain](./domain/README.md)     | The domain model.                               |
-| [database](./database/README.md) | Application database.                           |
-| [server](./server/README.md)     | The HTTP API server.                            |
-| [browser](./browser/README.md)   | The web application.                            |
-| [demo](./demo/README.md)         | A small database for demonstrating the project. |
-| [test](./test/README.md)         | Shared code for testing.                        |
+| Sub-project                              | Description                                     |
+|------------------------------------------|-------------------------------------------------|
+| [common/util](./common/util/README.md)   | Shared code.                                    |
+| [common/kdbc](./commonkdbc/README.md)    | Light weight JDBC wrapper.                      |
+| [app/domain](./app/domain/README.md)     | The domain model.                               |
+| [app/database](./app/database/README.md) | Application database.                           |
+| [app/server](./app/server/README.md)     | The HTTP API server.                            |
+| [app/browser](./app/browser/README.md)   | The web application.                            |
+| [demo](./demo/README.md)                 | A small database for demonstrating the project. |
+| [test](./test/README.md)                 | Shared code for testing.                        |
 
 ## Running
 
