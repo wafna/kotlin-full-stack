@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import  org.gradle.api.tasks.testing.logging.TestLogEvent
 
 plugins {
     id("org.jetbrains.kotlin.jvm")
@@ -30,6 +31,14 @@ dependencies {
 tasks {
     withType<KotlinCompile> {
         kotlinOptions.freeCompilerArgs = listOf("-Xcontext-receivers")
+    }
+    withType<Test> {
+        testLogging {
+            events = setOf(TestLogEvent.PASSED, TestLogEvent.SKIPPED, TestLogEvent.FAILED)
+            showExceptions = true
+            showCauses = true
+            showStackTraces = true
+        }
     }
 }
 
