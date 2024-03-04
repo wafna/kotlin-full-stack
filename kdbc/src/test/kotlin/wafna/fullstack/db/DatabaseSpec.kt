@@ -71,7 +71,7 @@ class TestDB internal constructor(private val db: Database) {
     }
 }
 
-suspend fun withTestH2DataSource(borrow: suspend (DataSource) -> Unit) {
+fun withTestH2DataSource(borrow: (DataSource) -> Unit) {
     HikariConfig()
         .apply {
             jdbcUrl = "jdbc:h2:mem:"
@@ -85,20 +85,22 @@ suspend fun withTestH2DataSource(borrow: suspend (DataSource) -> Unit) {
         }
 }
 
-suspend fun withTestDB(borrow: suspend (TestDB) -> Unit) {
+fun withTestDB(borrow: suspend (TestDB) -> Unit) {
     withTestH2DataSource { dataSource ->
         val db = Database(dataSource)
-        db.autoCommit {
-            update("CREATE SCHEMA testing")
-            update("CREATE TABLE testing.thingy(id UUID, name TEXT)")
+        runBlocking {
+            db.autoCommit {
+                update("CREATE SCHEMA testing")
+                update("CREATE TABLE testing.thingy(id UUID, name TEXT)")
+            }
+            borrow(TestDB(db))
         }
-        borrow(TestDB(db))
     }
 }
 
 class DatabaseSpec  {
     @Test
-    fun testDB() = runBlocking {
+    fun testDB() {
         withTestDB { db ->
             db.list().shouldBeEmpty()
             val thingy = Thingy(UUID.randomUUID(), "Smith")
