@@ -140,4 +140,3 @@ private fun <R> PreparedStatement.readRecords(reader: (ResultSet) -> R): List<R>
 abstract class ParamCollector<T> internal constructor() {
     abstract operator fun invoke(vararg params: Any?): T
 }
-

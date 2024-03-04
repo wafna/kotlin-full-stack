@@ -20,7 +20,7 @@ import javax.sql.DataSource
 /**
  * The sole domain object.
  */
-data class Thingy(val id: UUID, val name: String) {
+data class Thingy(val id: UUID, val name: String?) {
     companion object {
         val projection = projection<Thingy>(
             tableName = "testing.thingy",
@@ -61,7 +61,7 @@ class TestDB internal constructor(private val db: Database) {
         select(Thingy.projection, "ss", "WHERE id = ?")(id).optional()
     }
 
-    suspend fun update(id: UUID, name: String): Unit = db.transact {
+    suspend fun update(id: UUID, name: String?): Unit = db.transact {
         update("UPDATE ${Thingy.projection.tableName} SET name = ? WHERE id = ?")(name, id).unique()
     }
 

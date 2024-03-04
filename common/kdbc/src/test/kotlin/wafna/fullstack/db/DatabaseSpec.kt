@@ -1,5 +1,6 @@
 package wafna.fullstack.db
 
+import io.kotest.assertions.withClue
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
@@ -12,33 +13,50 @@ class DatabaseSpec {
         withH2TestDB { db ->
             db.list().shouldBeEmpty()
             val thingy = Thingy(UUID.randomUUID(), "Smith")
-            db.insert(thingy)
-            db.list().let { servers ->
-                servers.size shouldBe 1
-                servers.first().apply {
-                    id shouldBe thingy.id
-                    name shouldBe thingy.name
+            withClue("insert one") {
+                db.insert(thingy)
+                db.list().let { servers ->
+                    servers.size shouldBe 1
+                    servers.first().apply {
+                        id shouldBe thingy.id
+                        name shouldBe thingy.name
+                    }
                 }
             }
-            val newName = "Jones"
-            db.update(thingy.id, newName)
-            db.list().let { servers ->
-                servers.size shouldBe 1
-                servers.first().apply {
+            withClue("update") {
+                val newName = "Jones"
+                db.update(thingy.id, newName)
+                db.list().let { servers ->
+                    servers.size shouldBe 1
+                    servers.first().apply {
+                        id shouldBe thingy.id
+                        name shouldBe newName
+                    }
+                }
+                db.byId(thingy.id)!!.apply {
                     id shouldBe thingy.id
                     name shouldBe newName
                 }
             }
-            db.byId(thingy.id)!!.apply {
-                id shouldBe thingy.id
-                name shouldBe newName
+            withClue("null") {
+                db.update(thingy.id, null)
+                db.byId(thingy.id)!!.apply {
+                    id shouldBe thingy.id
+                    name.shouldBeNull()
+                }
             }
-            db.byId(UUID.randomUUID()).shouldBeNull()
-            db.delete(thingy.id)
-            db.list().shouldBeEmpty()
-            val thingies = listOf("Bob", "Carol", "Ted", "Alice").map { Thingy(UUID.randomUUID(), it) }
-            db.insert(* thingies.toTypedArray())
-            db.list().size shouldBe thingies.size
+            withClue("not found") {
+                db.byId(UUID.randomUUID()).shouldBeNull()
+            }
+            withClue("delete") {
+                db.delete(thingy.id)
+                db.list().shouldBeEmpty()
+            }
+            withClue("insert many") {
+                val thingies = listOf("Bob", "Carol", "Ted", "Alice").map { Thingy(UUID.randomUUID(), it) }
+                db.insert(* thingies.toTypedArray())
+                db.list().size shouldBe thingies.size
+            }
         }
     }
 }
