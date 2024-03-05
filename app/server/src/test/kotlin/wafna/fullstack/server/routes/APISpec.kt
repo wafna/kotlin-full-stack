@@ -34,21 +34,19 @@ fun apiControllerStub(
 private suspend fun runTestApplication(
     controller: APIController,
     test: suspend (HttpClient) -> Unit
-) = with(controller) {
-    testApplication {
-        application {
-            installContentNegotiation()
-            routing {
-                api()
-            }
+) = testApplication {
+    application {
+        installContentNegotiation()
+        routing {
+            with(controller) { api() }
         }
-        test(client)
     }
+    test(client)
 }
 
 class APISpec {
     @Test
-    fun `overview success`() = runBlocking {
+    fun `overview (success)`() = runBlocking {
         val schema = Schema(
             catalogName = "catalogName",
             schemaName = "schemaName",
@@ -59,9 +57,7 @@ class APISpec {
             sqlPath = "sqlPath"
         )
         val apiController = apiControllerStub(
-            overview = listOf(
-                schema
-            ).right()
+            overview = listOf(schema).right()
         )
         runTestApplication(apiController) { client ->
             val response = client.get("/overview")
@@ -81,9 +77,9 @@ class APISpec {
     }
 
     @Test
-    fun `overview internal server error`() = runBlocking {
+    fun `overview (internal server error)`() = runBlocking {
         val apiController = apiControllerStub(
-            overview = DomainError.InternalServerError("biffed").left()
+            overview = DomainError.InternalServerError("Fall down, go boom.").left()
         )
         runTestApplication(apiController) { client ->
             val response = client.get("/overview")
@@ -92,7 +88,7 @@ class APISpec {
     }
 
     @Test
-    fun `schema not found`() = runBlocking {
+    fun `schema (not found)`() = runBlocking {
         val apiController = apiControllerStub(
             schema = DomainError.NotFound("nonesuch").left()
         )
@@ -103,7 +99,7 @@ class APISpec {
     }
 
     @Test
-    fun `table bad request`() = runBlocking {
+    fun `table (bad request)`() = runBlocking {
         val apiController = apiControllerStub(
             table = DomainError.BadRequest("nonesuch").left()
         )

@@ -46,8 +46,8 @@ private inline fun <T> Connection.doSelect(
     reader: (ResultSet) -> T
 ): List<T> = withStatement(sql) {
     setParams(params)
-    buildList {
-        executeQuery().use { resultSet ->
+    executeQuery().use { resultSet ->
+        buildList {
             while (resultSet.next()) {
                 val record = reader(resultSet)
                 add(record)

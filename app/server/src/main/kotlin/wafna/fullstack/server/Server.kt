@@ -36,10 +36,10 @@ fun DatabaseConfig.hikariConfig() = HikariConfig().also {
     it.maximumPoolSize = maximumPoolSize
 }
 
-internal suspend fun runDB(config: DatabaseConfig, callback: suspend (AppDb) -> Unit) {
+internal suspend fun runDB(config: DatabaseConfig, borrow: suspend (AppDb) -> Unit) {
     HikariDataSource(config.hikariConfig()).use { dataSource ->
         val appDB = appDb(dataSource)
-        callback(appDB)
+        borrow(appDB)
     }
 }
 
