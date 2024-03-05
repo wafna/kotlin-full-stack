@@ -3,7 +3,7 @@ package wafna.kdbc
 import java.sql.ResultSet
 
 /**
- * Collects parameters for a select statement, which will need a record reader.
+ * Collects parameters for a select statement.
  */
 interface SelectParamReceiver<T> {
     operator fun invoke(vararg params: Any?): RecordReaderReceiver<T>
