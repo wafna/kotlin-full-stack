@@ -77,7 +77,7 @@ private fun Application.installRoutes(staticDir: File) {
     }
 }
 
-private fun Application.installContentNegotiation() {
+fun Application.installContentNegotiation() {
     install(ContentNegotiation) {
         gson {
             disableHtmlEscaping()

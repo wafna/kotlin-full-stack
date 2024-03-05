@@ -3,6 +3,7 @@ plugins {
     id("org.jetbrains.dokka")
 }
 
+val kotlinVersion: String by project
 val ktorVersion: String by project
 val hopliteVersion = "2.7.5"
 
@@ -23,6 +24,11 @@ dependencies {
 
     api(project(":common:logger"))
     api(project(":app:database"))
+
+    testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
+    testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
+
+    testImplementation(project(":common:test"))
 }
 
 tasks.run.get().workingDir = rootProject.projectDir

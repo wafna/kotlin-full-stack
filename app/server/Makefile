@@ -2,11 +2,11 @@ FORCE: ;
 
 BASE_URL := http://localhost:8686/api
 
-schemas: FORCE
-	@curl -v "${BASE_URL}/schemas" | jq
+overview: FORCE
+	@curl -v "${BASE_URL}/overview" | jq
 
-tables: FORCE
-	@curl -v "${BASE_URL}/tables/${SCHEMA}" | jq
+schema: FORCE
+	@curl -v "${BASE_URL}/schema/${SCHEMA}" | jq
 
 table-detail: FORCE
-	@curl -v "${BASE_URL}/tables/${SCHEMA}/${TABLE}" | jq
+	@curl -v "${BASE_URL}/table/${SCHEMA}/${TABLE}" | jq
