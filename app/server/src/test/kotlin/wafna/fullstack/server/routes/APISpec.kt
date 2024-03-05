@@ -1,12 +1,10 @@
-package wafna.fullstack.server
+package wafna.fullstack.server.routes
 
 import arrow.core.left
 import arrow.core.right
-import com.google.gson.Gson
 import io.kotest.matchers.shouldBe
 import io.ktor.client.*
 import io.ktor.client.request.*
-import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.server.routing.*
 import io.ktor.server.testing.*
@@ -16,8 +14,9 @@ import wafna.fullstack.domain.Schema
 import wafna.fullstack.domain.Table
 import wafna.fullstack.domain.errors.DomainError
 import wafna.fullstack.domain.errors.DomainResult
+import wafna.fullstack.server.bodyAs
 import wafna.fullstack.server.controllers.APIController
-import wafna.fullstack.server.routes.api
+import wafna.fullstack.server.installContentNegotiation
 import wafna.fullstack.server.views.TableView
 
 fun apiControllerStub(
@@ -47,11 +46,11 @@ private suspend fun runTestApplication(
     }
 }
 
-class ServerSpec {
+class APISpec {
     @Test
-    fun overviewSuccess() = runBlocking {
+    fun `overview success`() = runBlocking {
         val apiController = apiControllerStub(
-            listOf(
+            overview = listOf(
                 Schema(
                     catalogName = "catalogName",
                     schemaName = "schemaName",
@@ -70,14 +69,37 @@ class ServerSpec {
             payload.size shouldBe 1
         }
     }
+
     @Test
-    fun overviewInternalError() = runBlocking {
+    fun `overview internal server error`() = runBlocking {
         val apiController = apiControllerStub(
-            DomainError.InternalServerError("biffed").left()
+            overview = DomainError.InternalServerError("biffed").left()
         )
         runTestApplication(apiController) { client ->
             val response = client.get("/overview")
             response.status shouldBe HttpStatusCode.InternalServerError
+        }
+    }
+
+    @Test
+    fun `schema not found`() = runBlocking {
+        val apiController = apiControllerStub(
+            schema = DomainError.NotFound("nonesuch").left()
+        )
+        runTestApplication(apiController) { client ->
+            val response = client.get("/schema/nonesuch")
+            response.status shouldBe HttpStatusCode.NotFound
+        }
+    }
+
+    @Test
+    fun `table bad request`() = runBlocking {
+        val apiController = apiControllerStub(
+            table = DomainError.BadRequest("nonesuch").left()
+        )
+        runTestApplication(apiController) { client ->
+            val response = client.get("/table/nonesuch/-")
+            response.status shouldBe HttpStatusCode.BadRequest
         }
     }
 }
