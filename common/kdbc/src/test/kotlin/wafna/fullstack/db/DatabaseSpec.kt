@@ -9,7 +9,7 @@ import java.util.*
 
 class DatabaseSpec {
     @Test
-    fun testDB() {
+    fun `select, insert, update, delete`() {
         withH2TestDB { db ->
             db.selectAll().shouldBeEmpty()
             val thingy = Thingy(UUID.randomUUID(), "Smith")
