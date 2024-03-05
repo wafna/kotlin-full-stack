@@ -44,6 +44,9 @@ private suspend fun runTestApplication(
     test(client)
 }
 
+/**
+ * Tests that objects are serialized and that the domain errors are correctly translated to HTTP status codes.
+ */
 class APISpec {
     @Test
     fun `overview (success)`() = runBlocking {
