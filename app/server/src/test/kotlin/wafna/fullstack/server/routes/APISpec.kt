@@ -49,17 +49,18 @@ private suspend fun runTestApplication(
 class APISpec {
     @Test
     fun `overview success`() = runBlocking {
+        val schema = Schema(
+            catalogName = "catalogName",
+            schemaName = "schemaName",
+            schemaOwner = "schemaOwner",
+            defaultCharacterSetCatalog = "defaultCharacterSetCatalog",
+            defaultCharacterSetSchema = "defaultCharacterSetSchema",
+            defaultCharacterSetName = "defaultCharacterSetName",
+            sqlPath = "sqlPath"
+        )
         val apiController = apiControllerStub(
             overview = listOf(
-                Schema(
-                    catalogName = "catalogName",
-                    schemaName = "schemaName",
-                    schemaOwner = "schemaOwner",
-                    defaultCharacterSetCatalog = "defaultCharacterSetCatalog",
-                    defaultCharacterSetSchema = "defaultCharacterSetSchema",
-                    defaultCharacterSetName = "defaultCharacterSetName",
-                    sqlPath = "sqlPath"
-                )
+                schema
             ).right()
         )
         runTestApplication(apiController) { client ->
@@ -67,6 +68,15 @@ class APISpec {
             response.status shouldBe HttpStatusCode.OK
             val payload = response.bodyAs<Array<Schema>>().toList()
             payload.size shouldBe 1
+            payload.first().apply {
+                catalogName shouldBe schema.catalogName
+                schemaName shouldBe schema.schemaName
+                schemaOwner shouldBe schema.schemaOwner
+                defaultCharacterSetCatalog shouldBe schema.defaultCharacterSetCatalog
+                defaultCharacterSetSchema shouldBe schema.defaultCharacterSetSchema
+                defaultCharacterSetName shouldBe schema.defaultCharacterSetName
+                sqlPath shouldBe schema.sqlPath
+            }
         }
     }
 
