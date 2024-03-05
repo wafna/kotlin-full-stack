@@ -25,6 +25,9 @@ run-browser: FORCE
 
 # Util.
 
+docs: FORCE
+	@./gradlew dokkaHtmlCollector
+
 deps: FORCE
 	@./gradlew dependencyUpdates
 
