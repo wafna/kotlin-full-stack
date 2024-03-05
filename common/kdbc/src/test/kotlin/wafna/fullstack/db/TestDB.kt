@@ -83,7 +83,7 @@ fun testDB(dataSource: DataSource): TestDB {
     Flyway(
         FluentConfiguration()
             .dataSource(dataSource)
-            .locations("classpath:db/migrations")
+            .locations("classpath:db/migrations/kdbc")
     ).migrate()
     return TestDB(dataSource)
 }
