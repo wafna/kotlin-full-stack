@@ -135,7 +135,7 @@ private external interface TableConstraintsProps : Props {
     var tableConstraints: List<Constraint>
 }
 
-private val TableConstraints = FC<TableConstraintsProps> {props ->
+private val TableConstraints = FC<TableConstraintsProps> { props ->
     h.table {
         className = ClassName("table table-lg")
         h.thead {
@@ -159,7 +159,7 @@ private external interface IndexesProps : Props {
     var indexes: List<Index>
 }
 
-private val Indexes = FC<IndexesProps> {props ->
+private val Indexes = FC<IndexesProps> { props ->
     h.table {
         className = ClassName("table table-lg")
         h.thead {

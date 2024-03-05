@@ -9,6 +9,7 @@ sealed class DomainError {
     data class NotFound(val message: String, val exception: Throwable) : DomainError() {
         constructor(message: String) : this(message, RuntimeException())
     }
+
     data class InternalServerError(val message: String, val exception: Throwable) : DomainError() {
         constructor(message: String) : this(message, RuntimeException(message))
     }

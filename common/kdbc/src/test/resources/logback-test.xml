@@ -5,10 +5,10 @@
         </encoder>
     </appender>
 
-    <logger name="com.zaxxer.hikari" level="WARN" />
-    <logger name="org.flywaydb" level="INFO" />
-    <logger name="io.netty" level="INFO" />
-    <logger name="com.github.dockerjava.zerodep.shaded.org.apache.hc" level="INFO" />
+    <logger name="com.zaxxer.hikari" level="WARN"/>
+    <logger name="org.flywaydb" level="INFO"/>
+    <logger name="io.netty" level="INFO"/>
+    <logger name="com.github.dockerjava.zerodep.shaded.org.apache.hc" level="INFO"/>
 
     <root level="INFO">
         <appender-ref ref="STDOUT"/>

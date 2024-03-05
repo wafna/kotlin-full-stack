@@ -17,7 +17,6 @@ import wafna.fullstack.domain.View
 import wafna.fullstack.domain.errors.DomainResult
 import wafna.kdbc.autoCommit
 import wafna.kdbc.selectRecords
-import wafna.kdbc.transact
 import javax.sql.DataSource
 
 interface MetaDao {

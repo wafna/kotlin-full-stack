@@ -9,11 +9,15 @@ Connection carries methods for selecting, inserting, and updating records.
 The Projection class is a convenience for generating SQL and marshalling domain objects.
 It uses reflection to write objects to statements and read objects from result sets.
 It also provides methods to generate SQL fragments for common applications, viz.
+
 ```sql
-SELECT <columns> FROM <table> AS <alias> ...
-                 
-DELETE FROM <table> WHERE ...
+SELECT <columns>
+FROM < table > AS <alias>...
+    DELETE
+FROM < table >
+WHERE...
 ```
+
 Note that the delete formula prevents mass deletion by requiring a WHERE clause.
 
 Inserts are handled in batch mode and the SQL is completely generated.

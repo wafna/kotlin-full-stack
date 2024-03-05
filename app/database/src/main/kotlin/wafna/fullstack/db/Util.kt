@@ -1,9 +1,6 @@
 package wafna.fullstack.db
 
 import arrow.core.Either
-import arrow.core.left
-import arrow.core.right
-import java.util.concurrent.CancellationException
 import wafna.fullstack.domain.errors.DomainError
 import wafna.fullstack.domain.errors.DomainResult
 import wafna.fullstack.util.LazyLogger
