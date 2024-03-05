@@ -45,8 +45,8 @@ suspend fun <T> DataSource.autoCommit(
 
 fun <T> Connection.selectRecords(
     sql: String
-): SelectParamCollector<T> = object : SelectParamCollector<T>() {
-    override fun invoke(vararg params: Any?): ResultSetReceiver<T> = object : ResultSetReceiver<T>() {
+): SelectParamReceiver<T> = object : SelectParamReceiver<T>() {
+    override fun invoke(vararg params: Any?): RecordReaderReceiver<T> = object : RecordReaderReceiver<T>() {
         override fun read(read: (ResultSet) -> T): List<T> =
             doSelect(sql, params.toList(), read)
 
@@ -76,11 +76,11 @@ fun <T> Connection.insertRecords(
     tableName: String,
     fieldNames: List<String>,
     records: List<T>
-): BatchReceiver<T> = object : BatchReceiver<T>() {
+): RecordWriterReceiver<T> = object : RecordWriterReceiver<T>() {
     override fun write(write: (T) -> List<Any?>) =
         doInsert(tableName, fieldNames, records, write)
 
-    override fun write(writer: BatchWriter<T>): List<Int> =
+    override fun write(writer: RecordWriter<T>): List<Int> =
         doInsert(tableName, fieldNames, records) { writer.write(it) }
 }
 
@@ -104,7 +104,7 @@ private inline fun <T> Connection.doInsert(
 
 fun Connection.updateRecords(
     sql: String
-): ParamCollector<Int> = object : ParamCollector<Int>() {
+): UpdateParamReceiver<Int> = object : UpdateParamReceiver<Int>() {
     override fun invoke(vararg params: Any?): Int = withStatement(sql) {
         setParams(params.toList())
         executeUpdate()

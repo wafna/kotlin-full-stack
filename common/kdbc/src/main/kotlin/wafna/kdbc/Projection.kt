@@ -10,7 +10,7 @@ import kotlin.reflect.jvm.javaType
  * Defines operations for reading and writing domain objects.
  * Note that writing is optional.
  */
-abstract class Projection<T>(val tableName: String) : RecordReader<T>, BatchWriter<T> {
+abstract class Projection<T>(val tableName: String) : RecordReader<T>, RecordWriter<T> {
     abstract val columnNames: List<String>
 
     fun alias(prefix: String? = null): String = when {
