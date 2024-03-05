@@ -26,9 +26,9 @@ class DatabaseSpec {
             withClue("update") {
                 val newName = "Jones"
                 db.update(thingy.id, newName)
-                db.selectAll().let { servers ->
-                    servers.size shouldBe 1
-                    servers.first().apply {
+                db.selectAll().apply {
+                    size shouldBe 1
+                    first().apply {
                         id shouldBe thingy.id
                         name shouldBe newName
                     }
