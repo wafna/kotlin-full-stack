@@ -11,11 +11,10 @@ It uses reflection to write objects to statements and read objects from result s
 It also provides methods to generate SQL fragments for common applications, viz.
 
 ```sql
-SELECT <columns>
-FROM < table > AS <alias>...
-    DELETE
-FROM < table >
-WHERE...
+SELECT <columns> FROM <table> AS <alias> ...
+```
+```sql
+DELETE FROM <table> WHERE ...
 ```
 
 Note that the delete formula prevents mass deletion by requiring a WHERE clause.
