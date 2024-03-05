@@ -15,7 +15,7 @@ import wafna.fullstack.domain.Table
 import wafna.fullstack.domain.TableConstraint
 import wafna.fullstack.domain.View
 import wafna.fullstack.domain.errors.DomainResult
-import wafna.kdbc.autoCommit
+import wafna.kdbc.transact
 import wafna.kdbc.selectRecords
 import javax.sql.DataSource
 
@@ -33,17 +33,18 @@ interface MetaDao {
 
 internal fun metaDAO(dataSource: DataSource) = object : MetaDao {
     override suspend fun listSchemas(): DomainResult<List<Schema>> = domainResult {
-        dataSource.autoCommit {
-            selectRecords<Schema>(schemas.selectSql("ss"))().read(schemas)
+        dataSource.transact {
+            val sql = schemas.selectSql("ss")
+            selectRecords<Schema>(sql)().read(schemas)
         }
     }
 
     override suspend fun listTables(
         schemaName: String
     ): DomainResult<List<Table>> = domainResult {
-        dataSource.autoCommit {
-            selectRecords<Table>("${tables.selectSql("ts")} WHERE ts.table_schema = ?")(schemaName)
-                .read(tables)
+        dataSource.transact {
+            val sql = "${tables.selectSql("ts")} WHERE ts.table_schema = ?"
+            selectRecords<Table>(sql)(schemaName).read(tables)
         }
     }
 
@@ -51,21 +52,18 @@ internal fun metaDAO(dataSource: DataSource) = object : MetaDao {
         schemaName: String,
         tableName: String
     ): DomainResult<Table?> = domainResult {
-        dataSource.autoCommit {
-            selectRecords<Table>(
-                "${tables.selectSql("ts")} WHERE ts.table_schema = ? AND ts.table_name = ?"
-            )(
-                schemaName, tableName
-            ).read(tables).firstOrNull()
+        dataSource.transact {
+            val sql = "${tables.selectSql("ts")} WHERE ts.table_schema = ? AND ts.table_name = ?"
+            selectRecords<Table>(sql)(schemaName, tableName).read(tables).firstOrNull()
         }
     }
 
     override suspend fun listViews(
         schemaName: String
     ): DomainResult<List<View>> = domainResult {
-        dataSource.autoCommit {
-            selectRecords<View>("${views.selectSql("vs")} WHERE vs.table_schema = ?")(schemaName)
-                .read(views)
+        dataSource.transact {
+            val sql = "${views.selectSql("vs")} WHERE vs.table_schema = ?"
+            selectRecords<View>(sql)(schemaName).read(views)
         }
     }
 
@@ -73,12 +71,9 @@ internal fun metaDAO(dataSource: DataSource) = object : MetaDao {
         schemaName: String,
         tableName: String
     ): DomainResult<List<Column>> = domainResult {
-        dataSource.autoCommit {
-            selectRecords<Column>(
-                "${columns.selectSql("cs")} WHERE cs.table_schema = ? AND cs.table_name = ?"
-            )(
-                schemaName, tableName
-            ).read(columns)
+        dataSource.transact {
+            val sql = "${columns.selectSql("cs")} WHERE cs.table_schema = ? AND cs.table_name = ?"
+            selectRecords<Column>(sql)(schemaName, tableName).read(columns)
         }
     }
 
@@ -86,12 +81,9 @@ internal fun metaDAO(dataSource: DataSource) = object : MetaDao {
         schemaName: String,
         tableName: String
     ): DomainResult<List<TableConstraint>> = domainResult {
-        dataSource.autoCommit {
-            selectRecords<TableConstraint>(
-                "${tableConstraints.selectSql("tcs")} WHERE tcs.table_schema = ? AND tcs.table_name = ?"
-            )(
-                schemaName, tableName
-            ).read(tableConstraints)
+        dataSource.transact {
+            val sql = "${tableConstraints.selectSql("tcs")} WHERE tcs.table_schema = ? AND tcs.table_name = ?"
+            selectRecords<TableConstraint>(sql)(schemaName, tableName).read(tableConstraints)
         }
     }
 
@@ -99,12 +91,9 @@ internal fun metaDAO(dataSource: DataSource) = object : MetaDao {
         schemaName: String,
         tableName: String
     ): DomainResult<List<Index>> = domainResult {
-        dataSource.autoCommit {
-            selectRecords<Index>(
-                "${indexes.selectSql("ixs")} WHERE ixs.schemaname = ? AND ixs.tablename = ?"
-            )(
-                schemaName, tableName
-            ).read(indexes)
+        dataSource.transact {
+            val sql = "${indexes.selectSql("ixs")} WHERE ixs.schemaname = ? AND ixs.tablename = ?"
+            selectRecords<Index>(sql)(schemaName, tableName).read(indexes)
         }
     }
 
@@ -112,10 +101,9 @@ internal fun metaDAO(dataSource: DataSource) = object : MetaDao {
         schemaName: String,
         tableName: String
     ): DomainResult<List<ForeignKey>> = domainResult {
-        dataSource.autoCommit {
-            selectRecords<ForeignKey>(foreignKeys(FKDirection.FROM))(
-                schemaName, tableName
-            ).read(foreignKeys)
+        dataSource.transact {
+            val sql = foreignKeys(FKDirection.FROM)
+            selectRecords<ForeignKey>(sql)(schemaName, tableName).read(foreignKeys)
         }
     }
 
@@ -123,10 +111,9 @@ internal fun metaDAO(dataSource: DataSource) = object : MetaDao {
         schemaName: String,
         tableName: String
     ): DomainResult<List<ForeignKey>> = domainResult {
-        dataSource.autoCommit {
-            selectRecords<ForeignKey>(foreignKeys(FKDirection.TO))(
-                schemaName, tableName
-            ).read(foreignKeys)
+        dataSource.transact {
+            val sql = foreignKeys(FKDirection.TO)
+            selectRecords<ForeignKey>(sql)(schemaName, tableName).read(foreignKeys)
         }
     }
 }

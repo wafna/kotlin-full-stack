@@ -8,7 +8,7 @@ import org.flywaydb.core.Flyway
 import org.flywaydb.core.api.configuration.FluentConfiguration
 import wafna.fullstack.test.withTestH2DataSource
 import wafna.kdbc.FieldNameConverter
-import wafna.kdbc.autoCommit
+import wafna.kdbc.transact
 import wafna.kdbc.insertRecords
 import wafna.kdbc.projection
 import wafna.kdbc.selectRecords
@@ -54,11 +54,11 @@ fun List<Int>.assertUpdates(count: Int) {
 class TestDB internal constructor(private val db: DataSource) {
     private val thingies = Thingy.projection
     private val selector = thingies.selectSql("ts")
-    suspend fun selectAll(): List<Thingy> = db.autoCommit {
+    suspend fun selectAll(): List<Thingy> = db.transact {
         selectRecords<Thingy>(selector)().read(thingies)
     }
 
-    suspend fun selectById(id: UUID): Thingy? = db.autoCommit {
+    suspend fun selectById(id: UUID): Thingy? = db.transact {
         selectRecords<Thingy>("$selector WHERE id = ?")(id).read(thingies).optional()
     }
 

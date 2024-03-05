@@ -28,21 +28,6 @@ suspend fun <T> DataSource.transact(
     }
 }
 
-/**
- * Execute the given block, auto committing on return.
- */
-suspend fun <T> DataSource.autoCommit(
-    borrow: suspend Connection.() -> T
-): T = connection.use { connection ->
-    connection.autoCommit = true
-    connection.beginRequest()
-    try {
-        return connection.borrow()
-    } finally {
-        connection.endRequest()
-    }
-}
-
 fun <T> Connection.selectRecords(
     sql: String
 ): SelectParamReceiver<T> = object : SelectParamReceiver<T> {
