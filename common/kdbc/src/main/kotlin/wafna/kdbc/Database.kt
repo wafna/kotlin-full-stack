@@ -45,8 +45,8 @@ suspend fun <T> DataSource.autoCommit(
 
 fun <T> Connection.selectRecords(
     sql: String
-): SelectParamReceiver<T> = object : SelectParamReceiver<T>() {
-    override fun invoke(vararg params: Any?): RecordReaderReceiver<T> = object : RecordReaderReceiver<T>() {
+): SelectParamReceiver<T> = object : SelectParamReceiver<T> {
+    override fun invoke(vararg params: Any?): RecordReaderReceiver<T> = object : RecordReaderReceiver<T> {
         override fun read(read: (ResultSet) -> T): List<T> =
             doSelect(sql, params.toList(), read)
 
@@ -76,7 +76,7 @@ fun <T> Connection.insertRecords(
     tableName: String,
     fieldNames: List<String>,
     records: List<T>
-): RecordWriterReceiver<T> = object : RecordWriterReceiver<T>() {
+): RecordWriterReceiver<T> = object : RecordWriterReceiver<T> {
     override fun write(write: (T) -> List<Any?>) =
         doInsert(tableName, fieldNames, records, write)
 
@@ -104,7 +104,7 @@ private inline fun <T> Connection.doInsert(
 
 fun Connection.updateRecords(
     sql: String
-): UpdateParamReceiver<Int> = object : UpdateParamReceiver<Int>() {
+): UpdateParamReceiver<Int> = object : UpdateParamReceiver<Int> {
     override fun invoke(vararg params: Any?): Int = withStatement(sql) {
         setParams(params.toList())
         executeUpdate()
