@@ -2,9 +2,6 @@ FORCE: ;
 
 # Code.
 
-spiff: FORCE
-	@./gradlew ktlintFormat ktlintCheck detekt
-
 test: FORCE
 	@./gradlew test
 

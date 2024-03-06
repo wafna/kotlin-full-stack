@@ -27,6 +27,20 @@ This can be run repeatedly; there is no need to stop it, first.
 make -C ./demo psql
 ```
 
+* Start the server.
+
+```bash
+CONFIG=./demo/config.yml make run-server
+```
+
+* Start the browser.
+
+Starts the browser in continuous update mode.
+
+```bash
+make run-browser
+```
+
 * Stop the demo, destroy the containers:
 
 ```bash

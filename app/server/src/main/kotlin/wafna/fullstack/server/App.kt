@@ -11,7 +11,7 @@ import java.io.File
 
 private val log = LazyLogger(App::class)
 
-internal class App : CliktCommand() {
+private class App : CliktCommand() {
     private val config: File by option(envvar = "CONFIG")
         .file(mustExist = true)
         .help("The config file to use.")
@@ -20,7 +20,7 @@ internal class App : CliktCommand() {
     override fun run() = runApp(config)
 }
 
-internal fun runApp(configFile: File): Unit = runBlocking {
+private fun runApp(configFile: File): Unit = runBlocking {
     Runtime.getRuntime().addShutdownHook(object : Thread() {
         override fun run() {
             log.warn { "Shutting down." }
