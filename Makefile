@@ -8,8 +8,10 @@ test: FORCE
 clean: FORCE
 	@./gradlew clean
 
-rebuild: clean
+build: FORCE
 	@./gradlew --warning-mode all build
+
+rebuild: clean build
 
 # Apps.
 

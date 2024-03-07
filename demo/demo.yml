@@ -23,3 +23,9 @@ services:
       - ./flyway:/flyway/sql
     depends_on:
       - postgres
+  server:
+    container_name: demo_server
+    image: server-demo:latest
+    command: "--config=config.yml"
+    depends_on:
+      - postgres
