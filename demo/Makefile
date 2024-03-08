@@ -15,9 +15,11 @@ run: stop
 	@docker-compose -f "./demo.yml" up -d
 
 server-image: FORCE
-	@([ -d ./build/ ] && rm -rf ./build/) && mkdir ./build
-	@unzip ../app/server/build/distributions/kotlin-full-stack-demo.zip -d ./build/
-	@sudo docker image build -t server-demo:latest .
+	@([ -e ./build ] && rm -rf ./build) && mkdir ./build && \
+		echo Unzipping demo to build. && \
+		unzip -q ../app/server/build/distributions/kotlin-full-stack-demo.zip -d ./build/ && \
+		docker image build -t server-demo:latest .
+	@rm -rf ./build
 
 server-run: FORCE
 	@docker rm -f server-demo
