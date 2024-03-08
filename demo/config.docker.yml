@@ -1,0 +1,12 @@
+appEnv: docker
+
+database:
+  jdbcUrl: "jdbc:postgresql://demo_pg:5432/demo"
+  username: "username"
+  password: "password"
+  maximumPoolSize: 1
+
+server:
+  host: 0.0.0.0
+  port: 8688
+  static: "browser/"

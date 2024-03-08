@@ -37,6 +37,7 @@ fun DatabaseConfig.hikariConfig() = HikariConfig().also {
 }
 
 internal suspend fun runDB(config: DatabaseConfig, borrow: suspend (AppDb) -> Unit) {
+    log.info { "Connection to database ${config.jdbcUrl}"}
     HikariDataSource(config.hikariConfig()).use { dataSource ->
         val appDB = appDb(dataSource)
         borrow(appDB)

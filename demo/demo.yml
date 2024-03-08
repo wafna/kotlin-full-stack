@@ -27,5 +27,7 @@ services:
     container_name: demo_server
     image: server-demo:latest
     command: "--config=config.yml"
+    ports:
+      - "8688:8688"
     depends_on:
       - postgres
