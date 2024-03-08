@@ -1,6 +1,6 @@
 # Demo
 
-A small database for demonstrating the database.
+A containerized deployment with a demonstration database.
 
 ## IDE
 
@@ -15,27 +15,16 @@ Contains a demo Postgres database in docker and a config file to use with the se
 
 * Run the demo:
 
+This will start a postgres container, a flyway container that will initialize the database, and a container for the
+server application.
 ```bash
 make -C ./demo run
 ```
-
 This can be run repeatedly; there is no need to stop it, first.
-
-* Run psql on the database server:
-
-```bash
-make -C ./demo psql
-```
-
-* Start the server.
-
-```bash
-CONFIG=./demo/config.yml make run-server
-```
 
 * Start the browser.
 
-Starts the browser in continuous update mode.
+Starts the browser in continuous update mode.  This will launch a browser window.
 
 ```bash
 make run-browser
@@ -45,11 +34,4 @@ make run-browser
 
 ```bash
 make -C ./demo stop
-```
-
-* View the logs on the database server or flyway, respectively.
-
-```bash
-make -C ./demo logs demo_pg
-make -C ./demo logs flyway
 ```
