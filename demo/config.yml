@@ -4,7 +4,7 @@ database:
   jdbcUrl: "jdbc:postgresql://localhost:8687/demo"
   username: "username"
   password: "password"
-  maximumPoolSize: 1
+  maximumPoolSize: 4
 
 server:
   host: 0.0.0.0
