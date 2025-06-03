@@ -1,33 +1,36 @@
 package wafna.fullstack.server
 
-import arrow.core.Either
-import com.google.gson.JsonDeserializationContext
-import com.google.gson.JsonDeserializer
-import com.google.gson.JsonElement
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
-import io.ktor.http.*
-import io.ktor.serialization.gson.*
+import io.ktor.http.CacheControl
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpMethod
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
-import io.ktor.server.engine.*
-import io.ktor.server.http.content.*
-import io.ktor.server.netty.*
-import io.ktor.server.plugins.contentnegotiation.*
-import io.ktor.server.plugins.cors.routing.*
-import io.ktor.server.routing.*
-import wafna.fullstack.db.AppDb
-import wafna.fullstack.db.appDb
-import wafna.fullstack.server.controllers.apiController
-import wafna.fullstack.server.routes.api
-import wafna.fullstack.util.LazyLogger
+import io.ktor.server.engine.applicationEnvironment
+import io.ktor.server.engine.connector
+import io.ktor.server.engine.embeddedServer
+import io.ktor.server.http.content.staticFiles
+import io.ktor.server.netty.Netty
+import io.ktor.server.plugins.cors.routing.CORS
+import io.ktor.server.routing.getAllRoutes
+import io.ktor.server.routing.route
+import io.ktor.server.routing.routing
+import io.ktor.server.sessions.SessionTransportTransformerEncrypt
+import io.ktor.server.sessions.Sessions
+import io.ktor.server.sessions.cookie
+import io.ktor.util.hex
 import java.io.File
-import java.lang.reflect.Type
-import java.util.*
+import wafna.fullstack.api.API
+import wafna.fullstack.kdbc.AppDb
+import wafna.fullstack.kdbc.appDb
+import wafna.fullstack.server.routes.sessionRoutes
+import wafna.fullstack.server.routes.dataRoutes
+import wafna.fullstack.util.LazyLogger
 
 private object Server
 
-private val log = LazyLogger(Server::class)
+private val logger = LazyLogger(Server::class)
 
 fun DatabaseConfig.hikariConfig() = HikariConfig().also {
     it.jdbcUrl = jdbcUrl
@@ -37,74 +40,74 @@ fun DatabaseConfig.hikariConfig() = HikariConfig().also {
 }
 
 internal suspend fun runDB(config: DatabaseConfig, borrow: suspend (AppDb) -> Unit) {
-    log.info { "Connection to database ${config.jdbcUrl}"}
+    logger.info { "Connection to database ${config.jdbcUrl}" }
     HikariDataSource(config.hikariConfig()).use { dataSource ->
         val appDB = appDb(dataSource)
         borrow(appDB)
     }
 }
 
-data class ServerContext(val db: AppDb)
-
-context(ServerContext)
-internal fun runServer(config: ServerConfig) {
-    val environment = applicationEngineEnvironment {
-        connector {
-            port = config.port
-            host = config.host
-        }
-        module {
-            installCORS()
-            installContentNegotiation()
-            installRoutes(File(config.static))
-        }
-    }
-    embeddedServer(Netty, environment).apply {
-        log.info { "Starting server at ${config.host}:${config.port}" }
-        start(wait = true)
-    }
+internal fun runServer(api: API, config: ServerConfig) {
+    embeddedServer(
+        factory = Netty,
+        environment = applicationEnvironment { log = logger.log },
+        configure = {
+            connector {
+                port = config.port
+                host = config.host
+            }
+        },
+    ) {
+        installSessions(config.session)
+        installCORS()
+        installRoutes(api, File(config.static))
+        logger.info { "\u263a Starting server: ${config.host}:${config.port}" }
+    }.start(wait = true)
 }
 
-context(ServerContext)
-private fun Application.installRoutes(staticDir: File) {
+private fun Application.installRoutes(api: API, staticDir: File) {
     require(staticDir.isDirectory) { "Static directory not found: ${staticDir.canonicalPath}" }
-    log.info { "Serving static directory: ${staticDir.canonicalPath}" }
-
+    logger.info { "Serving static directory: ${staticDir.canonicalPath}" }
+    install(AccessPlugin)
     routing {
-        accessLog {
-            route("/api") { with(apiController()) { api() } }
-            route("/") { staticFiles(remotePath = "/", dir = staticDir) }
+        route("/api") {
+            route("/session") { sessionRoutes(api) }
+            route("/data") { dataRoutes(api) }
+        }
+        staticFiles(remotePath = "/", dir = staticDir) {
+            // Best not to cache anything since almost all the static content is JavaScript.
+            cacheControl {
+                listOf(CacheControl.NoCache(CacheControl.Visibility.Public))
+            }
+        }
+    }.run {
+        logger.debug { "--- All Routes:\n   ${getAllRoutes().joinToString("\n   ")}" }
+    }
+}
+
+internal fun Application.installSessions(sessionConfig: SessionConfig) {
+    val domain = sessionConfig.domain
+    val maxAgeInSeconds = sessionConfig.maxAgeInSeconds
+    val signingKey = hex(sessionConfig.signingKey)
+    val encryptionKey = hex(sessionConfig.encryptionKey)
+    install(Sessions) {
+        cookie<UserSession>(USER_SESSION) {
+            cookie.path = "/"
+            cookie.maxAgeInSeconds = maxAgeInSeconds
+            cookie.secure = false
+            cookie.domain = domain
+            transform(SessionTransportTransformerEncrypt(encryptionKey, signingKey))
         }
     }
 }
 
-fun Application.installContentNegotiation() {
-    install(ContentNegotiation) {
-        gson {
-            disableHtmlEscaping()
-            serializeNulls()
-            registerTypeAdapter(
-                UUID::class.java,
-                object : JsonDeserializer<UUID> {
-                    override fun deserialize(
-                        json: JsonElement?,
-                        typeOfT: Type?,
-                        context: JsonDeserializationContext?
-                    ): UUID = Either.catch {
-                        json!!.asString.let { UUID.fromString(it) }
-                    }.onLeft { e ->
-                        throw IllegalArgumentException("Failed to serialize UUID from ${json?.asString}", e)
-                    }.getOrNull()!!
-                }
-            )
-        }
-    }
-}
-
-private fun Application.installCORS() {
+internal fun Application.installCORS() {
     install(CORS) {
         anyHost()
+        allowOrigins { true }
         allowHeaders { true }
+        allowHeader(HttpHeaders.ContentType)
+        allowHeader(HttpHeaders.Authorization)
         allowNonSimpleContentTypes = true
         methods.addAll(listOf(HttpMethod.Get, HttpMethod.Delete, HttpMethod.Post, HttpMethod.Put))
     }

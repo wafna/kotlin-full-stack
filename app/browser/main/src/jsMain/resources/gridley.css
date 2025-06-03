@@ -1,0 +1,45 @@
+.grid-spinner {
+    padding: 1px;
+    margin: 0;
+    align-content: center;
+    font-size: smaller;
+}
+
+.grid-sort-control-box {
+    margin-right: 8px;
+}
+
+.grid-column-header-box {
+    display: flex;
+    flex-direction: row;
+    vertical-align: center;
+}
+
+.grid-column-header {
+    display: inline-block;
+    justify-content: center;
+    vertical-align: center;
+    height: 100%;
+}
+
+.grid-control-box {
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.grid-control {
+    display: inline-block;
+}
+
+.grid-pager-box {
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.grid-pager-elem {
+    display: inline-block;
+}

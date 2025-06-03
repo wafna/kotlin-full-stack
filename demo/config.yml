@@ -1,7 +1,7 @@
-appEnv: demo
+appEnv: DEMO
 
 database:
-  jdbcUrl: "jdbc:postgresql://localhost:8687/demo"
+  jdbcUrl: "jdbc:postgresql://localhost:5432/demo"
   username: "username"
   password: "password"
   maximumPoolSize: 4
@@ -9,4 +9,9 @@ database:
 server:
   host: 0.0.0.0
   port: 8686
-  static: "app/browser/build/distributions/"
+  session:
+    domain: "localhost"
+    maxAgeInSeconds: 3600000
+    signingKey: "aac4130eb7cfcd23263b1d5e11e11383"
+    encryptionKey: "128467d75bea8372dad6252091de57d9"
+  static: "app/browser/main/build/dist/js/productionExecutable"

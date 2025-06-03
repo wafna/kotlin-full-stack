@@ -1,35 +1,22 @@
-FORCE: ;
+.FORCE: ;
 
-# Code.
+build: .FORCE
+	@$(MAKE) -C app build
 
-test: FORCE
-	@./gradlew test
+test: .FORCE
+	@$(MAKE) -C app test
 
-clean: FORCE
-	@./gradlew clean
+full: .FORCE
+	@$(MAKE) -C app full
 
-build: FORCE
-	@./gradlew --warning-mode all build
+check: .FORCE
+	@$(MAKE) -C app check
 
-rebuild: clean build
+format: .FORCE
+	@$(MAKE) -C app format
 
-# Apps.
+deps: .FORCE
+	@$(MAKE) -C app deps
 
-# CONFIG_FILE=../demo/config.yml make run-server
-run-server: FORCE
-	@./gradlew :app:server:run
-
-run-browser: FORCE
-	@./gradlew :app:browser:browserDevelopmentRun --continuous
-
-# Util.
-
-docs: FORCE
-	@./gradlew dokkaHtmlCollector
-
-deps: FORCE
-	@./gradlew dependencyUpdates
-
-# After changing deps in the browser project.
-yarn: FORCE
-	@./gradlew kotlinUpgradeYarnLock
+dokka: .FORCE
+	@$(MAKE) -C app dokka

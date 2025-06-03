@@ -1,0 +1,5 @@
+database:
+  jdbcUrl: "jdbc:postgresql://localhost:5432/demo"
+  username: "username"
+  password: "password"
+  maximumPoolSize: 4

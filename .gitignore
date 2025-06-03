@@ -1,5 +1,6 @@
 .idea/
 .local/
+.kotlin/
 **/.gradle/
 **/build/
 **/kotlin-js-store/

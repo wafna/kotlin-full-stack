@@ -1,27 +1,32 @@
 package wafna.fullstack.server
 
-import io.ktor.server.application.*
-import io.ktor.server.request.*
-import io.ktor.server.routing.*
+import io.ktor.server.application.createApplicationPlugin
+import io.ktor.server.request.httpMethod
+import io.ktor.server.request.uri
+import io.ktor.server.response.ApplicationSendPipeline
+import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
+import kotlin.math.round
 import wafna.fullstack.util.LazyLogger
-import kotlin.system.measureTimeMillis
 
 private object Access
 
-private val accessLog = LazyLogger(Access::class)
+private val accessLog = LazyLogger<Access>()
+private val requestTimes = ConcurrentHashMap<UUID, Long>()
 
-/**
- * Wrap this around a route to get a look at the activity on that route.
- */
-fun Route.accessLog(callback: Route.() -> Unit): Route {
-    val accessLogRoute = createChild(object : RouteSelector() {
-        override fun evaluate(context: RoutingResolveContext, segmentIndex: Int): RouteSelectorEvaluation =
-            RouteSelectorEvaluation.Constant
-    })
-    accessLogRoute.intercept(ApplicationCallPipeline.Plugins) {
-        val elapsed = measureTimeMillis { proceed() }
-        accessLog.info { "$elapsed ms ${call.request.httpMethod.value} ${call.request.uri}" }
+/** Plugin for logging all the routes that get called. */
+val AccessPlugin =
+    createApplicationPlugin(name = "AccessLog") {
+        onCall { call ->
+            val requestId = UUID.randomUUID()
+            requestTimes[requestId] = System.nanoTime()
+            call.response.pipeline.intercept(ApplicationSendPipeline.After) {
+                // I'm skeptical of the resulting duration since the status is not set, yet.
+                val duration = requestTimes.remove(requestId)?.let { System.nanoTime() - it }
+                val durationMs = duration?.let { round(it / 1000.0) / 1000.0 }
+                accessLog.info {
+                    "${call.request.httpMethod.value} ${call.request.uri} (${durationMs} ms)"
+                }
+            }
+        }
     }
-    callback(accessLogRoute)
-    return accessLogRoute
-}

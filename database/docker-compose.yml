@@ -1,0 +1,29 @@
+# Starts a database container and an ephemeral flyway container.
+
+services:
+  database:
+    container_name: fullstack_db
+    image: arm64v8/postgres
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=username
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=demo
+# Sidecar flyway initializer.
+# Deprecated in favor of flyway in the server.
+  flyway:
+    container_name: fullstack_flyway
+    image: flyway/flyway:10.15.2-alpine
+    platform: linux/amd64
+    command: "-locations=filesystem:/flyway/sql -connectRetries=3 migrate"
+    environment:
+      - FLYWAY_USER=username
+      - FLYWAY_PASSWORD=password
+      - FLYWAY_URL=jdbc:postgresql://fullstack_db:5432/demo
+      - FLYWAY_SCHEMAS=flyway
+    volumes:
+      - ./flyway:/flyway/sql
+    depends_on:
+      - database

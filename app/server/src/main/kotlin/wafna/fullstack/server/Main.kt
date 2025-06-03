@@ -1,24 +1,17 @@
 package wafna.fullstack.server
 
 import com.github.ajalt.clikt.core.CliktCommand
+import com.github.ajalt.clikt.core.main
 import com.github.ajalt.clikt.parameters.options.help
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.file
 import kotlinx.coroutines.runBlocking
+import wafna.fullstack.api.api
 import wafna.fullstack.util.LazyLogger
 import java.io.File
 
 private val log = LazyLogger(App::class)
-
-private class App : CliktCommand() {
-    private val config: File by option(envvar = "CONFIG")
-        .file(mustExist = true)
-        .help("The config file to use.")
-        .required()
-
-    override fun run() = runApp(config)
-}
 
 private fun runApp(configFile: File): Unit = runBlocking {
     Runtime.getRuntime().addShutdownHook(object : Thread() {
@@ -27,13 +20,26 @@ private fun runApp(configFile: File): Unit = runBlocking {
         }
     })
 
+    log.info { "Loading config ${configFile.absolutePath}" }
     val appConfig = appConfig(configFile)
 
-    runDB(appConfig.database) { appDB ->
-        with(ServerContext(appDB)) {
-            runServer(appConfig.server)
-        }
+    runDB(appConfig.database) { db ->
+        runServer(api(db), appConfig.server)
     }
 }
 
-fun main(args: Array<String>): Unit = App().main(args)
+private object App : CliktCommand() {
+    private val config: File by option(envvar = "CONFIG")
+        .file(mustExist = true)
+        .help("The config file to use.")
+        .required()
+
+    override fun run() = runApp(config)
+}
+
+fun main(args: Array<String>) =
+    try {
+        App.main(args)
+    } catch (e: Throwable) {
+        log.error(e) { "FAILURE" }
+    }
