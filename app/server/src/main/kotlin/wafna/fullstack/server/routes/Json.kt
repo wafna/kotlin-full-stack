@@ -60,7 +60,6 @@ private val <T> JsonAdapter<T>.adapt: JsonInvoke<T>
 
 /**
  *  Json adapters.
- *  The unused ones are required dependencies.
  */
 @Suppress("unused")
 @OptIn(ExperimentalStdlibApi::class)
@@ -77,11 +76,9 @@ object Json {
     val authResult = moshi.adapter<AuthResult>().adapt
 }
 
-fun User?.toJson(): String? = Json.user(this)
+/* For top level returns */
 
-//fun DataBlock?.toJson(): String? = Json.dataBlock(this)
-
-fun List<DataBlock>.toJson(): String? = Json.dataBlockList(this)
+fun DataBlock.toJson(): String = Json.dataBlock(this)!!
 
 fun DataBlockRecords?.toJson(): String? = Json.dataBlockRecords(this)
 

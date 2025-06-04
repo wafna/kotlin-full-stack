@@ -3,7 +3,7 @@ package wafna.fullstack.api.domain
 import wafna.fullstack.domain.EID
 
 data class DataBlockImport(
-    val dataBlockId: EID,
+    val owner: EID,
     val name: String,
     val records: List<DataRecordImport>
 )

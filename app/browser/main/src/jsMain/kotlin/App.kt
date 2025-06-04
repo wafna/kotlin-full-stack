@@ -7,6 +7,7 @@ import react.dom.html.ReactHTML.br
 import react.dom.html.ReactHTML.button
 import react.dom.html.ReactHTML.div
 import react.dom.html.ReactHTML.form
+import react.dom.html.ReactHTML.img
 import react.dom.html.ReactHTML.input
 import react.dom.html.ReactHTML.label
 import react.dom.html.ReactHTML.small
@@ -61,6 +62,10 @@ val App = FC<Props> {
                     className = ClassName("app-title-bar")
                     div {
                         className = ClassName("app-title-text")
+                        img {
+                            src = "./favicon-32x32.png"
+                            alt = "Kotlin Fullstack"
+                        }
                         +"Kotlin Fullstack"
                         onClick = preventDefault { window.location.href = "/" }
                     }
@@ -89,30 +94,30 @@ val App = FC<Props> {
                 }
             }
         }
-    }
-    Row {
-        Col {
-            scale = ColumnScale.Large
-            size = 12
-            div {
-                // Do nothing for the Ready state.
-                authResult.onLoading {
-                    Loading()
-                }.onFailure {
-                    console.error(it)
-                    LoginForm {
-                        setAuthResult = ::login
-                    }
-                    div {
-                        className = ClassName("alert alert-danger")
-                        +"Login failed."
-                    }
-                }.withSuccess {
-                    if (null != user) {
-                        doRoute(route, Routes)
-                    } else {
+        Row {
+            Col {
+                scale = ColumnScale.Large
+                size = 12
+                div {
+                    // Do nothing for the Ready state.
+                    authResult.onLoading {
+                        Loading()
+                    }.onFailure {
+                        console.error(it)
                         LoginForm {
                             setAuthResult = ::login
+                        }
+                        div {
+                            className = ClassName("alert alert-danger")
+                            +"Login failed."
+                        }
+                    }.withSuccess {
+                        if (null != user) {
+                            doRoute(route, Routes)
+                        } else {
+                            LoginForm {
+                                setAuthResult = ::login
+                            }
                         }
                     }
                 }

@@ -27,6 +27,8 @@ dependencies {
     implementation("io.ktor:ktor-server-sessions:$ktorVersion")
     implementation("com.squareup.moshi:moshi-kotlin:$moshiVersion")
     implementation("com.squareup.moshi:moshi-adapters:$moshiVersion")
+    // Import
+    implementation("com.opencsv:opencsv:5.9")
 
     implementation(project(":common:logger"))
     implementation(project(":db"))
