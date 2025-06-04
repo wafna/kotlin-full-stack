@@ -7,6 +7,7 @@ import react.PropsWithClassName
 import react.PropsWithStyle
 import react.dom.events.ChangeEvent
 import react.dom.events.SyntheticEvent
+import web.file.FileList
 import web.html.HTMLInputElement
 
 private val mainScope = MainScope()
@@ -47,6 +48,9 @@ fun withTargetValue(block: (String) -> Unit): (ChangeEvent<HTMLInputElement>) ->
  */
 val ChangeEvent<HTMLInputElement>.targetString: String
     get() = target.asDynamic().value as String
+
+val ChangeEvent<HTMLInputElement>.targetFiles: FileList
+    get() = target.files!!
 
 fun makeURL(apiRoot: String, path: String, vararg params: Pair<String, String>): String = buildString {
     append(apiRoot)

@@ -12,13 +12,26 @@ import react.ChildrenBuilder
 import react.FC
 import react.Props
 import react.dom.html.ReactHTML.a
+import react.dom.html.ReactHTML.button
+import react.dom.html.ReactHTML.details
 import react.dom.html.ReactHTML.div
+import react.dom.html.ReactHTML.form
+import react.dom.html.ReactHTML.input
+import react.dom.html.ReactHTML.label
+import react.dom.html.ReactHTML.span
+import react.dom.html.ReactHTML.summary
 import react.useEffectOnce
 import react.useState
 import util.Loading
 import util.XData
+import util.preventDefault
+import util.targetFiles
+import util.targetString
 import util.withIO
 import web.cssom.ClassName
+import web.file.File
+import web.html.InputType
+import web.prompts.alert
 
 /**
  * This is the nexus of the grid where all the bits are wired together.
@@ -26,10 +39,12 @@ import web.cssom.ClassName
 val HomePage = FC<Props> {
     var pageResult: XData<HomePageData> by useState(XData.Ready)
 
+    fun updatePageResult() = withIO {
+        pageResult = XData(Api.data.homePage())
+    }
+
     useEffectOnce {
-        withIO {
-            pageResult = XData(Api.data.homePage())
-        }
+        updatePageResult()
     }
 
     pageResult
@@ -39,15 +54,24 @@ val HomePage = FC<Props> {
             defaultErrorHandler(result) { data ->
                 if (data.dataBlocks.isEmpty()) {
                     div {
-                       className = ClassName("alert alert-warning")
-                       +"No data are available."
+                        className = ClassName("alert alert-warning")
+                        +"No data are available."
                     }
                 } else {
                     createGrid(data.dataBlocks)
                 }
             }
         }
+    details {
+        summary {
+            span { +"Import Data Block" }
+        }
+        CreateDataBlock {
+            onSuccess = { updatePageResult() }
+        }
+    }
 }
+
 
 private fun ChildrenBuilder.createGrid(dataBlocks: List<DataBlock>) {
     (createGrid<DataBlock>("sections")) {
@@ -70,9 +94,75 @@ private fun ChildrenBuilder.createGrid(dataBlocks: List<DataBlock>) {
                 object : DisplayColumnLongDate<DataBlock>("Created") {
                     override fun value(record: DataBlock): Long = record.createdAt
                 },
-                object : DisplayColumnLongDate<DataBlock>("Closed") {
-                    override fun value(record: DataBlock): Long? = record.deletedAt
-                },
+//                object : DisplayColumnLongDate<DataBlock>("Closed") {
+//                    override fun value(record: DataBlock): Long? = record.deletedAt
+//                },
             )
+    }
+}
+
+private external interface CreateDataBlockProps : Props {
+    var onSuccess: (DataBlock) -> Unit
+}
+
+private val CreateDataBlock = FC<CreateDataBlockProps> { props ->
+    var dataBlockName by useState("")
+    var importFile: File? by useState(null)
+    var inFlight by useState(false)
+    form {
+        div {
+            className = ClassName("form-group")
+            label {
+                htmlFor = "data-block-name"
+                +"Name"
+            }
+            input {
+                className = ClassName("form-control")
+                type = InputType.text
+                id = "data-block-name"
+                name = "data-block-name"
+                value = dataBlockName
+                onChange = { dataBlockName = it.targetString }
+            }
+        }
+        div {
+            className = ClassName("form-group")
+            label {
+                htmlFor = "data-block-file"
+                +"File"
+            }
+            input {
+                className = ClassName("inline form-control-file")
+                id = "import-snapshot-file"
+                name = "import-snapshot-file"
+                type = InputType.file
+                onChange = { importFile = it.targetFiles[0] }
+                multiple = false
+                accept = ".csv"
+            }
+        }
+        val enabled = !inFlight && dataBlockName.isNotEmpty() && importFile != null
+        button {
+            className = ClassName("btn btn-primary")
+            disabled = !enabled
+            +"Create"
+            onClick = preventDefault {
+                inFlight = true
+                withIO {
+                    Api.data.import(dataBlockName, importFile!!).apply {
+                        inFlight = false
+                        onSuccess { dataBlock ->
+                            props.onSuccess(dataBlock)
+                            alert("\u263A Success!")
+                        }
+                        onFailure { e ->
+                            console.error("Import failed.", Exception(e))
+                            alert("Import failed.")
+                        }
+                    }
+                    dataBlockName = ""
+                }
+            }
+        }
     }
 }
