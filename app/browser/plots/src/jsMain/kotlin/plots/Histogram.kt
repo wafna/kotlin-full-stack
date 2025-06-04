@@ -12,6 +12,8 @@ import org.jetbrains.letsPlot.letsPlot
 import react.FC
 import react.Props
 import react.dom.html.ReactHTML.div
+import react.dom.html.ReactHTML.option
+import react.dom.html.ReactHTML.select
 import react.dom.html.ReactHTML.span
 import react.useEffect
 import react.useState
@@ -20,7 +22,6 @@ import util.ColumnScale
 import util.Container
 import util.Row
 import web.cssom.ClassName
-import react.dom.html.ReactHTML as h
 
 internal external interface BarchartProps : Props {
     var name: String
@@ -50,7 +51,7 @@ internal val BarChart = FC<BarchartProps> { props ->
         val plotDiv = JsFrontendUtil.createPlotDiv(plot)
         contentDiv.appendChild(plotDiv)
     }
-    h.div { this.id = id }
+    div { this.id = id }
 }
 
 enum class HistogramDisplay {
@@ -65,7 +66,7 @@ external interface HistogramProps : Props {
 
 @OptIn(ExperimentalUuidApi::class)
 val Histogram = FC<HistogramProps> { props ->
-    var display by useState<HistogramDisplay>(props.display ?: HistogramDisplay.Decile)
+    var display by useState(props.display ?: HistogramDisplay.Decile)
     val scores = props.scores.toList()
     if (scores.isEmpty()) {
         div {
@@ -99,41 +100,9 @@ val Histogram = FC<HistogramProps> { props ->
                             }
                             div {
                                 className = ClassName("histogram-title-element")
-                                span {
-                                    h.div {
-                                        className = ClassName("form-group")
-                                        h.span { +"Display: " }
-                                        h.select {
-                                            HistogramDisplay.entries.forEach { bucket ->
-                                                h.option {
-                                                    val (value: Int, label: String) = when (bucket) {
-                                                        HistogramDisplay.Decile -> -10 to "Decile"
-                                                        HistogramDisplay.Vigesile -> -20 to "Vigesile"
-                                                        HistogramDisplay.Auto6 -> 6 to "Auto 6"
-                                                        HistogramDisplay.Auto8 -> 8 to "Auto 8"
-                                                        HistogramDisplay.Auto10 -> 10 to "Auto 10"
-                                                        HistogramDisplay.Auto12 -> 12 to "Auto 12"
-                                                    }
-                                                    this.value = value
-                                                    this.label = label
-                                                    if (bucket == display) {
-                                                        selected = true
-                                                    }
-                                                }
-                                                onChange = { e ->
-                                                    display = when (e.target.value.toIntOrNull()) {
-                                                        -10 -> HistogramDisplay.Decile
-                                                        -20 -> HistogramDisplay.Vigesile
-                                                        6 -> HistogramDisplay.Auto6
-                                                        8 -> HistogramDisplay.Auto8
-                                                        10 -> HistogramDisplay.Auto10
-                                                        12 -> HistogramDisplay.Auto12
-                                                        else -> HistogramDisplay.Auto8
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
+                                HistogramDisplaySelector {
+                                    this.display = display
+                                    setDisplay = { display = it }
                                 }
                             }
                         }
@@ -151,7 +120,7 @@ val Histogram = FC<HistogramProps> { props ->
                     Col {
                         scale = ColumnScale.Large
                         size = 2
-                        StatsBoxVert {
+                        StatsBox {
                             headers = emptyList()
                             stats = Stats.fromDataSet(props.scores)
                         }
@@ -201,4 +170,47 @@ fun autoBuckets(numBuckets: Int, data: Iterable<Double>): Buckets {
         "${(lo + (scale * (i - 1))).format()}-${(lo + (scale * i)).format()}"
     }
     return Buckets(scores, counts.toList())
+}
+
+private external interface HistogramDisplaySelectorProps : Props {
+    var display: HistogramDisplay
+    var setDisplay: (HistogramDisplay) -> Unit
+}
+
+private val HistogramDisplaySelector = FC<HistogramDisplaySelectorProps> { props ->
+    div {
+        className = ClassName("form-group")
+        span { +"Display: " }
+        select {
+            HistogramDisplay.entries.forEach { bucket ->
+                option {
+                    val (value: Int, label: String) = when (bucket) {
+                        HistogramDisplay.Decile -> -10 to "Decile"
+                        HistogramDisplay.Vigesile -> -20 to "Vigesile"
+                        HistogramDisplay.Auto6 -> 6 to "Auto 6"
+                        HistogramDisplay.Auto8 -> 8 to "Auto 8"
+                        HistogramDisplay.Auto10 -> 10 to "Auto 10"
+                        HistogramDisplay.Auto12 -> 12 to "Auto 12"
+                    }
+                    this.value = value
+                    this.label = label
+                    if (bucket == props.display) {
+                        selected = true
+                    }
+                }
+                onChange = { e ->
+                    val display = when (e.target.value.toIntOrNull()) {
+                        -10 -> HistogramDisplay.Decile
+                        -20 -> HistogramDisplay.Vigesile
+                        6 -> HistogramDisplay.Auto6
+                        8 -> HistogramDisplay.Auto8
+                        10 -> HistogramDisplay.Auto10
+                        12 -> HistogramDisplay.Auto12
+                        else -> HistogramDisplay.Auto8
+                    }
+                    props.setDisplay(display)
+                }
+            }
+        }
+    }
 }

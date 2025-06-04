@@ -1,6 +1,5 @@
 package plots
 
-import util.Entities
 import kotlin.math.roundToLong
 import react.FC
 import react.Props
@@ -15,7 +14,7 @@ external interface StatsBoxProps : Props {
     var stats: Stats
 }
 
-internal val StatsBoxVert = FC<StatsBoxProps> { props ->
+internal val StatsBox = FC<StatsBoxProps> { props ->
     h.table {
         className = ClassName("table table-sm table-bordered")
         fun box(name: String, value: String) {
