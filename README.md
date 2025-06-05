@@ -34,52 +34,61 @@ developers along the right path.
 
 ***Fine Grained Projects***
 
-Everyone from Sun Tzu to Edsger Dijkstra agrees; divide and conquer is an effective strategy.
+The advantages of fine-grained projects are many.
 
-The advantages of fine-grained projects are many and Gradle's plug-in system makes this exceedingly convenient by
-allowing common project configuration to be shared across projects.
+- Enhance testability
+- Promote code reuse
+- Control dependencies
+- Reduce build and test times
+- Promote single responsibility
 
-- Enhance Testability
-- Promote Code Reuse
-- Control Third Party Dependencies
-- Reduce Build and Test Times
-- Promote Single Responsibility
+Gradle's plug-in system makes this exceedingly convenient by allowing common project configuration to be shared across projects.
 
-Project structure should be factored just like code; by extracting bits to be shared as one would in any language.
-In Gradle, this happens at both the project and plug-in levels.
-In addition to sharing code, this reduces build and test times by having less code around modified code.
-
-More abstractly, small projects promote single responsibility.
-Here are two examples as implemented in this project.
-
-This project splits the CRUD operations on the database into their own project.  
+This project, for example, splits the CRUD operations on the database into their own project (*db*).  
 The *api* project composes these operations inside transactions.
 This gives a finer grain for testing as well providing maximum flexibility and reuse for implementing the API.
 
-One more!
+Furthermore, the project treats the API as an embeddable component; 
+the HTTP interface is simply one presentation of the API designed specifically for the browser client.
+Thus, the functions of persistence, business logic, and network transport are split into their
+own subprojects.
+This organization allows for easy testing and instrumentation at all levels as well as 
+offering a convenient way to provide multiple external interfaces.
 
-<hr/>
-Includes Flyway, Ktor, Kotlin/JS, React, docker-compose, and integration tests with Postgres containers.
+A further benefit of this organization is that the domain becomes extensible.
+The API layer adds its own domain objects, built upon the core business domain,
+according to the shape of information it would like to transmit.
+The HTTP layer adds yet more domain objects for the same reason.
+In this manner, the business API and presentation API for the web client are decoupled.
 
-| Sub-project                                | Description                                     |
-|--------------------------------------------|-------------------------------------------------|
-| [common/logger](./common/logger/README.md) | Lazy logger.                                    |
-| [common/kdbc](./common/kdbc/README.md)     | Light weight JDBC wrapper.                      |
-| [common/test](./common/test/README.md)     | Shared code for testing.                        |
-| [app/domain](./app/domain/README.md)       | The domain model.                               |
-| [app/database](./app/database/README.md)   | Application database.                           |
-| [app/server](./app/server/README.md)       | The HTTP API server.                            |
-| [app/browser](./app/browser/README.md)     | The web application.                            |
-| [demo](./demo/README.md)                   | A small database for demonstrating the project. |
+***Exceptions and Boundaries***
 
-## Notes
+This project employs a theory of exception handling based on boundaries in code.
+Attempting to wrap return values has its place, but can never be complete in the presence
+of all thrown exceptions and has some drawbacks, namely syntactic verbosity and leakage of
+side effects when the return value is not needed but the result not bound.
 
-* Small project lead to easier dependency management and faster build times.
+To address this, the project defines boundaries where all exceptions of any sort are resolved.
+These boundaries are the (very few) places in code where we need to guarantee a result. 
+One such place is at the API interface.
+Its methods must open transactions to obtain connections.
+The `transact` method provides an exception boundary, guaranteeing a *Result*.
+The HTTP routes are an obvious boundary, as well.
 
-Expand on:
+### The Stack
 
-Confusion of domain layers.  Don't merge the core business domain with objects convenient for the API or the browser.
-It should be only the objects the DB layer (or core business persistence) understands.
+* Postgresql
+* Flyway
+* Ktor
+* React
+* Let's Plot
 
-Confusion of HTTP interface for API boundary: it works out better if the API is embeddable and the HTTP layer is
-simply a presentation layer, maybe for a browser, maybe a REST API for public consumption.  Write two!
+#### Supporting Tech
+
+* Gradle
+* Docker
+
+## Fullstack
+
+The application demonstrates importing CSV files and displaying their data in
+charts.
