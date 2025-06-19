@@ -85,7 +85,7 @@ private fun Application.installRoutes(api: API, staticDir: File) {
     }
 }
 
-internal fun Application.installSessions(sessionConfig: SessionConfig) {
+private fun Application.installSessions(sessionConfig: SessionConfig) {
     val domain = sessionConfig.domain
     val maxAgeInSeconds = sessionConfig.maxAgeInSeconds
     val signingKey = hex(sessionConfig.signingKey)
@@ -101,7 +101,7 @@ internal fun Application.installSessions(sessionConfig: SessionConfig) {
     }
 }
 
-internal fun Application.installCORS() {
+private fun Application.installCORS() {
     install(CORS) {
         anyHost()
         allowOrigins { true }
