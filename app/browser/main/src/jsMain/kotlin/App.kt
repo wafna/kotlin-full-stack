@@ -1,12 +1,15 @@
 import client.Api
 import domain.AuthResult
+import kotlinx.browser.document
 import kotlinx.browser.window
 import react.FC
 import react.Props
 import react.dom.html.ReactHTML.br
 import react.dom.html.ReactHTML.button
+import react.dom.html.ReactHTML.dialog
 import react.dom.html.ReactHTML.div
 import react.dom.html.ReactHTML.form
+import react.dom.html.ReactHTML.h3
 import react.dom.html.ReactHTML.img
 import react.dom.html.ReactHTML.input
 import react.dom.html.ReactHTML.label
@@ -25,6 +28,7 @@ import util.preventDefault
 import util.targetString
 import util.withIO
 import web.cssom.ClassName
+import web.html.HTMLDialogElement
 import web.html.InputType
 
 // Main component.
@@ -35,13 +39,14 @@ import web.html.InputType
 val App = FC<Props> {
     var route: HashRoute? by useState(null)
     var authResult: XData<AuthResult> by useState(XData.Ready)
+    var error: Throwable? by useState(null)
 
     fun updateRoute() = withIO {
         route = HashRoute.currentHash()
     }
 
     fun login(result: Result<AuthResult>) {
-        authResult = XData.Received(result)
+        authResult = XData(result)
     }
 
     useEffectOnce {
@@ -99,24 +104,36 @@ val App = FC<Props> {
                 scale = ColumnScale.Large
                 size = 12
                 div {
-                    // Do nothing for the Ready state.
-                    authResult.onLoading {
-                        Loading()
-                    }.onFailure {
-                        console.error(it)
-                        LoginForm {
-                            setAuthResult = ::login
-                        }
-                        div {
-                            className = ClassName("alert alert-danger")
-                            +"Login failed."
-                        }
-                    }.withSuccess {
-                        if (null != user) {
-                            doRoute(route, Routes)
-                        } else {
+                    // This could come from the initial check or the form.
+                    with(authResult) {
+                        onFailure {
+                            console.error(it)
+                            error = it
                             LoginForm {
                                 setAuthResult = ::login
+                            }
+                        }
+                        withSuccess {
+                            if (null != user) {
+                                doRoute(route, Routes)
+                            } else {
+                                if (null != error) {
+                                    div {
+                                        className = ClassName("alert alert-danger")
+                                    }
+                                }
+                                LoginForm {
+                                    setAuthResult = ::login
+                                }
+                                h3 { +"Welcome to this demonstration project." }
+                                button {
+                                    className = ClassName("btn btn-primary")
+                                    +"Login"
+                                    onClick = preventDefault {
+                                        val loginForm = document.getElementById("login-form") as HTMLDialogElement
+                                        loginForm.showModal()
+                                    }
+                                }
                             }
                         }
                     }
@@ -126,6 +143,7 @@ val App = FC<Props> {
     }
 }
 
+private const val LoginFormId = "login-form"
 
 external interface LoginFormProps : Props {
     var setAuthResult: (Result<AuthResult>) -> Unit
@@ -133,46 +151,71 @@ external interface LoginFormProps : Props {
 
 val LoginForm = FC<LoginFormProps> { props ->
     var username: String by useState("")
-    var loading by useState { false }
+    var authResult: XData<AuthResult> by useState(XData.Ready)
+    var error: String? by useState(null)
     fun login() {
         withIO {
-            loading = true
-            props.setAuthResult(Api.session.login(username))
-            loading = false
+            authResult = XData(Api.session.login(username))
         }
     }
-    if (loading)
-        Loading()
-    else
-        form {
-            onSubmit = preventDefault { login() }
-            div {
-                className = ClassName("form-group")
-                label {
-                    htmlFor = "username"
-                    +"Login"
-                }
-                input {
-                    className = ClassName("form-control")
-                    id = "username"
-                    name = "username"
-                    type = InputType.text
-                    placeholder = "Username"
-                    value = username
-                    autoFocus = true
-                    onChange = { username = it.targetString }
+    dialog {
+        id = LoginFormId
+
+        with(authResult) {
+            onLoading { Loading() }
+            onFailure { e ->
+                error = e.message ?: "An error has occurred."
+            }
+            onSuccess { result ->
+                if (null == result.user) {
+                    error = "Unknown username."
+                    username = ""
+                    authResult = XData.Ready
+                } else {
+                    withIO {
+                        props.setAuthResult(Result.success(result))
+                    }
                 }
             }
-            br()
-            div {
-                className = ClassName("form-group")
-                button {
-                    className = ClassName("btn btn-primary")
-                    disabled = username.isBlank()
-                    onClick = preventDefault { login() }
-                    +"Login"
+            onReady {
+                form {
+                    onSubmit = preventDefault { login() }
+                    div {
+                        className = ClassName("form-group")
+                        label {
+                            htmlFor = "username"
+                            +"Username"
+                        }
+                        input {
+                            className = ClassName("form-control")
+                            id = "username"
+                            name = "username"
+                            type = InputType.text
+                            placeholder = "Username"
+                            value = username
+                            autoFocus = true
+                            onChange = { username = it.targetString }
+                        }
+                    }
+                    br()
+                    div {
+                        className = ClassName("form-group")
+                        button {
+                            className = ClassName("btn btn-primary")
+                            disabled = username.isBlank()
+                            onClick = preventDefault { login() }
+                            +"Login"
+                        }
+                    }
+                }
+                if (null != error) {
+                    div {
+                        className = ClassName("alert alert-danger")
+                        +error
+                    }
                 }
             }
         }
+    }
 }
 

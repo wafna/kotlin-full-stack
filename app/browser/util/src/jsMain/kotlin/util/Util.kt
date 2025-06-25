@@ -76,9 +76,6 @@ sealed class XData<out T> {
     abstract fun onSuccess(f: (T) -> Unit): XData<T>
     abstract fun withSuccess(f: T.() -> Unit): XData<T>
     abstract fun onFailure(f: (Throwable) -> Unit): XData<T>
-//    abstract val isReady: Boolean
-//    abstract val isLoading: Boolean
-//    abstract val isReceived: Boolean
 
     object Ready : XData<Nothing>() {
         override fun onReady(f: () -> Unit) = apply { f() }
@@ -87,9 +84,6 @@ sealed class XData<out T> {
         override fun onSuccess(f: (Nothing) -> Unit): XData<Nothing> = this
         override fun withSuccess(f: Nothing.() -> Unit): XData<Nothing> = this
         override fun onFailure(f: (Throwable) -> Unit): XData<Nothing> = this
-//        override val isReady: Boolean = true
-//        override val isLoading: Boolean = false
-//        override val isReceived: Boolean = false
     }
 
     object Loading : XData<Nothing>() {
@@ -99,9 +93,6 @@ sealed class XData<out T> {
         override fun onSuccess(f: (Nothing) -> Unit): XData<Nothing> = this
         override fun withSuccess(f: Nothing.() -> Unit): XData<Nothing> = this
         override fun onFailure(f: (Throwable) -> Unit): XData<Nothing> = this
-//        override val isReady: Boolean = false
-//        override val isLoading: Boolean = true
-//        override val isReceived: Boolean = false
     }
 
     class Received<T>(val result: Result<T>) : XData<T>() {
@@ -111,9 +102,6 @@ sealed class XData<out T> {
         override fun onSuccess(f: (T) -> Unit): XData<T> = apply { result.onSuccess { f(it) } }
         override fun withSuccess(f: T.() -> Unit): XData<T> = apply { result.onSuccess { with(it) { f() } } }
         override fun onFailure(f: (Throwable) -> Unit): XData<T> = apply { result.onFailure { f(it) } }
-//        override val isReady: Boolean = false
-//        override val isLoading: Boolean = false
-//        override val isReceived: Boolean = true
     }
 
     companion object {
