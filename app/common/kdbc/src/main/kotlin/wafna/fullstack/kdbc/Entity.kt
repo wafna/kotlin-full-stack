@@ -30,6 +30,10 @@ abstract class Entity<R>(val table: String, val fields: List<Field>) {
         }
     }
 
+    fun projection(alias: String): String = fields.joinToString(", ") {
+        if (alias.isEmpty()) it.name else "$alias.${it.name}"
+    }
+
     val fieldMap = fields.associateBy { it.name }
 
     /** Marshal one row of a ResultSet into a record. */
@@ -45,13 +49,8 @@ abstract class Entity<R>(val table: String, val fields: List<Field>) {
     ): List<Param>
 
     /** Generates the head of a SELECT statement. */
-    fun selectHead(alias: String = ""): String {
-        return "SELECT ${
-            fields.joinToString(", ") {
-                if (alias.isEmpty()) it.name else "$alias.${it.name}"
-            }
-        } FROM $table${if (alias.isEmpty()) "" else " $alias"}"
-    }
+    fun selectHead(alias: String = ""): String =
+        "SELECT ${projection(alias)} FROM $table${if (alias.isEmpty()) "" else " $alias"}"
 
     /**
      * @param connection The transaction holder.
