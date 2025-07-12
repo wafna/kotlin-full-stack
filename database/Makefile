@@ -5,7 +5,7 @@ export
 
 run: .FORCE
 	@echo ">>> Running database container."
-	@docker-compose up -d --remove-orphans
+	@docker compose up -d --remove-orphans
 
 stop: .FORCE
 	@echo ">>> Stopping database container."

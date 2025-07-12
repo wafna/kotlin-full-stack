@@ -12,7 +12,7 @@ stop: FORCE
 	@docker rm -f "${SERVER_CONTAINER_NAME}"
 
 run: stop
-	@docker-compose -f "./demo.yml" up -d
+	@docker compose -f "./demo.yml" up -d
 
 server-image: FORCE
 	@echo Unzipping demo to build. && \
