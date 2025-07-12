@@ -18,5 +18,8 @@ format: .FORCE
 deps: .FORCE
 	@$(MAKE) -C app deps
 
+db: .FORCE
+	@$(MAKE) -C database clean run
+
 dokka: .FORCE
 	@$(MAKE) -C app dokka
