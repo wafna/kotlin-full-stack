@@ -3,7 +3,7 @@
 services:
   database:
     container_name: fullstack_db
-    image: arm64v8/postgres
+    image: postgres
     restart: always
     ports:
       - "5432:5432"
@@ -16,7 +16,7 @@ services:
   flyway:
     container_name: fullstack_flyway
     image: flyway/flyway:10.15.2-alpine
-    platform: linux/amd64
+    platform: linux
     command: "-locations=filesystem:/flyway/sql -connectRetries=3 migrate"
     environment:
       - FLYWAY_USER=username
