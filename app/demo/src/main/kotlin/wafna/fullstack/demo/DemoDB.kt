@@ -26,15 +26,15 @@ fun runDemo(args: Array<String>, runDb: suspend (AppDb) -> Unit) {
         object : CliktCommand() {
             private val configFile: File by option(envvar = "CONFIG")
                 .file(mustExist = true)
-                .help<File?, File, File>("The config file to use.")
-                .required<File, File>()
+                .help("The config file to use.")
+                .required()
 
-            override fun run() = runBlocking<Unit> {
+            override fun run() = runBlocking {
                 log.info { "Loading config ${configFile.absolutePath}" }
                 val appConfig = appConfig(configFile)
                 val databaseConfig = appConfig.database
                 log.info { "Connecting to database ${databaseConfig.jdbcUrl}" }
-                HikariDataSource(databaseConfig.hikariConfig()).use<HikariDataSource, Unit> { dataSource ->
+                HikariDataSource(databaseConfig.hikariConfig()).use { dataSource ->
                     val appDB = appDb(dataSource)
                     runDb(appDB)
                 }

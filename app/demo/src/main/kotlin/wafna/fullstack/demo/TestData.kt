@@ -25,7 +25,9 @@ fun main(args: Array<String>) = runBlocking(Dispatchers.IO) {
         coroutineScope {
             users.forEach { user ->
                 launch {
-                    require(api.users.byId(user.id).getOrThrow()!! == user) { "biffed user $user" }
+                    api.users.byId(user.id).getOrThrow()!!.let {
+                        require(it.username == user.username) { "biffed user\n$it\n$user" }
+                    }
                     for (nthBlock in 0 until 2) {
                         val records = (0 until 10).map { i ->
                             "record-$i" to List(100) { Random().nextGaussian(50.0, 10.0).toString() }

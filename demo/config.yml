@@ -7,7 +7,7 @@ database:
   maximumPoolSize: 4
 
 server:
-  host: 0.0.0.0
+  host: localhost
   port: 8686
   session:
     domain: "localhost"
