@@ -1,0 +1,28 @@
+# https://taskfile.dev
+
+version: '3'
+silent: true
+# These settings collide with the dev database settings so this taskfile is not includible.
+dotenv: [database/settings.env]
+tasks:
+  psql:
+    cmds:
+      - docker exec -it ${DB_CONTAINER_NAME} psql -U "${POSTGRES_USER}" "${POSTGRES_DB}"
+  stop:
+    cmds:
+      - docker rm -f "${DB_CONTAINER_NAME}"
+      - docker rm -f "${FLYWAY_CONTAINER_NAME}"
+      - docker rm -f "${SERVER_CONTAINER_NAME}"
+  run:
+    cmds:
+      - docker compose -f "./demo.yml" up -d
+  server-image:
+    cmds:
+      - echo Unzipping demo to build.
+      - unzip -q ../app/server/build/distributions/kotlin-full-stack-demo.zip -d ./build/
+      - docker image build -t server-demo:latest .
+      - rm -rf ./build
+  server-run:
+    cmds:
+      - docker rm -f server-demo
+      - docker run -d --name server-demo server-demo:latest

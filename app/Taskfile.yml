@@ -1,0 +1,44 @@
+# https://taskfile.dev
+
+version: '3'
+silent: true
+
+vars:
+  GREETING: Hello, World!
+
+tasks:
+  full:
+    cmds:
+      - ./gradlew --warning-mode all --rerun-tasks build
+  test:
+    cmds:
+      - ./gradlew --warning-mode all test jsBrowserTest
+  check:
+    cmds:
+      - ./gradlew --warning-mode all check
+  format:
+    cmds:
+      - ./gradlew --warning-mode all ktfmtFormat
+  clean:
+    cmds:
+      - ./gradlew clean
+  build:
+    cmds:
+      - ./gradlew --warning-mode all build
+  docs:
+    cmds:
+      - ./gradlew dokkaGenerate
+  # Util.
+
+  # Check for out of date libraries.
+  deps:
+    cmds:
+      - ./gradlew dependencyUpdates
+  # After changing deps in the browser project.
+  yarn:
+    cmds:
+      - ./gradlew kotlinUpgradeYarnLock
+  # Unfortunately, Mac allow multiple listeners on a port.
+  ports:
+    cmds:
+      - lsof -nP -iTCP -sTCP:LISTEN

@@ -1,0 +1,35 @@
+# https://taskfile.dev
+
+version: '3'
+silent: true
+tasks:
+  run:
+    cmds:
+      - echo ">>> Running database container."
+      - docker compose up -d --remove-orphans
+  stop:
+    cmds:
+      - echo ">>> Stopping database container {{.DB_CONTAINER_NAME}}"
+      - docker stop "{{.DB_CONTAINER_NAME}}" 2> /dev/null
+  clean:
+    cmds:
+      - echo ">>> Cleaning containers."
+      - docker rm -f "{{.DB_CONTAINER_NAME}}" 2> /dev/null
+      - docker rm -f "{{.FLYWAY_CONTAINER_NAME}}" 2> /dev/null
+  bounce:
+    cmds:
+      - task: stop
+      - task: clean
+      - task: run
+  ## Targets the local `red_db` container.
+  psql.local:
+    cmds:
+      - docker exec -it {{.DB_CONTAINER_NAME}} psql -U "{{.POSTGRES_USER}}" "{{.POSTGRES_DB}}"
+  ## Targets the local `red_db` container.
+  log.local:
+    cmds:
+      - docker logs red_db
+  ## Targets the test container.
+  psql.test:
+    cmds:
+      - docker exec -it "$(shell docker ps | grep 'postgres:' | cut -d' ' -f1)" psql -U username test
