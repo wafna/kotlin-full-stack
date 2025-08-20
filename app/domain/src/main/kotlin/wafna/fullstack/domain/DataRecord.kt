@@ -1,12 +1,14 @@
 package wafna.fullstack.domain
 
-import kotlinx.datetime.Instant
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 
 data class DataRecordWip(
     val dataBlockId: EID,
     val key: String,
     val data: List<String>
 ) : Wip<DataRecord> {
+    @OptIn(ExperimentalTime::class)
     override fun reify(createdAt: Instant) =
         DataRecord(entityId(), dataBlockId, key, data)
 }

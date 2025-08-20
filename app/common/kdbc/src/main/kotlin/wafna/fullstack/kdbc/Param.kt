@@ -7,8 +7,9 @@ import java.sql.Types
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.*
-import kotlinx.datetime.Instant
-import kotlinx.datetime.toJavaInstant
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
+import kotlin.time.toJavaInstant
 
 /** Expresses setting a parameter into a prepared statement. */
 typealias Param = (statement: PreparedStatement, parameterIndex: Int) -> Unit
@@ -26,6 +27,7 @@ val Int?.paramInt: Param
 val String?.paramString: Param
     get() = nullableParam { s, i, x -> s.setString(i, x) }
 
+@OptIn(ExperimentalTime::class)
 val Instant?.paramInstant: Param
     get() =
         nullableParam { s, i, x ->

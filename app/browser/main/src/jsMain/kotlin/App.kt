@@ -16,20 +16,12 @@ import react.dom.html.ReactHTML.label
 import react.dom.html.ReactHTML.small
 import react.useEffectOnce
 import react.useState
-import util.Col
-import util.ColumnScale
-import util.Container
-import util.HashRoute
-import util.Loading
-import util.Row
-import util.XData
-import util.doRoute
-import util.preventDefault
-import util.targetString
-import util.withIO
+import util.*
 import web.cssom.ClassName
+import web.dom.ElementId
 import web.html.HTMLDialogElement
 import web.html.InputType
+import web.html.text
 
 // Main component.
 
@@ -159,7 +151,7 @@ val LoginForm = FC<LoginFormProps> { props ->
         }
     }
     dialog {
-        id = LoginFormId
+        id = ElementId(LoginFormId)
 
         with(authResult) {
             onLoading { Loading() }
@@ -183,12 +175,12 @@ val LoginForm = FC<LoginFormProps> { props ->
                     div {
                         className = ClassName("form-group")
                         label {
-                            htmlFor = "username"
+                            htmlFor = ElementId("username")
                             +"Username"
                         }
                         input {
                             className = ClassName("form-control")
-                            id = "username"
+                            id = ElementId("username")
                             name = "username"
                             type = InputType.text
                             placeholder = "Username"

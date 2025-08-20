@@ -1,6 +1,6 @@
 package wafna.fullstack.kdbc
 
-import io.kotest.assertions.fail
+import io.kotest.assertions.AssertionErrorBuilder.Companion.fail
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 import java.sql.Connection
@@ -9,16 +9,17 @@ import java.sql.Timestamp
 import java.util.UUID
 import javax.sql.DataSource
 import kotlinx.coroutines.runBlocking
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
+import kotlin.time.Clock
+import kotlin.time.Instant
 import org.junit.jupiter.api.Test
+import kotlin.time.ExperimentalTime
 
 enum class DenizenType(val sql: String) {
     Knight("knight"),
     Knave("knave"),
 }
 
-data class Denizen(
+data class Denizen @OptIn(ExperimentalTime::class) constructor(
     val id: UUID,
     val name: String?,
     val index: Int?,
@@ -47,14 +48,17 @@ suspend fun DataSource.initTestDB() {
 
 // The nanos resolution of the timestamp gets lost in the round trip to the database
 // so we truncate them immediately.
+@OptIn(ExperimentalTime::class)
 fun Instant.dropNanos(): Instant = Instant.fromEpochMilliseconds(toEpochMilliseconds())
 
+@OptIn(ExperimentalTime::class)
 fun Timestamp.toKotlinInstant(): Instant = Instant.fromEpochMilliseconds(time)
 
 // Custom getters...
 
 fun ResultSetFieldIterator.getUUID(): UUID? = getObject() as UUID
 
+@OptIn(ExperimentalTime::class)
 fun ResultSetFieldIterator.getInstant(): Instant? = getTimestamp()?.toKotlinInstant()
 
 fun ResultSetFieldIterator.getDenizenType(): DenizenType? =
@@ -85,6 +89,7 @@ fun withTestDB(borrow: suspend (DataSource) -> Unit) =
     }
 
 class TestDB {
+    @OptIn(ExperimentalTime::class)
     val denizen =
         object :
             Entity<Denizen>(
@@ -118,6 +123,7 @@ class TestDB {
                 }
         }
 
+    @OptIn(ExperimentalTime::class)
     @Test
     fun testDenizen() =
         withTestDB { db ->

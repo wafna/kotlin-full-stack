@@ -5,7 +5,9 @@ import react.FC
 import react.Props
 import react.useState
 import web.cssom.ClassName
+import web.dom.ElementId
 import web.html.InputType
+import web.html.search
 import react.dom.html.ReactHTML as h
 
 external interface GridleySearchProps : Props {
@@ -19,7 +21,7 @@ val Search =
         h.input {
             className = ClassName("form-control")
             type = InputType.search
-            id = "${props.baseId}-search"
+            id = ElementId("${props.baseId}-search")
             name = "${props.baseId}-search"
             placeholder = "Search…"
             ariaLabel = "Search"

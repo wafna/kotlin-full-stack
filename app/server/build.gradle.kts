@@ -1,7 +1,7 @@
 plugins {
     id("kotlin-jvm-application")
     id("org.jetbrains.dokka")
-    kotlin("plugin.serialization") version "2.2.0-Beta1"
+    kotlin("plugin.serialization") version "2.2.20-RC"
 }
 
 val kotlinVersion: String by project
@@ -28,7 +28,7 @@ dependencies {
     implementation("com.squareup.moshi:moshi-kotlin:$moshiVersion")
     implementation("com.squareup.moshi:moshi-adapters:$moshiVersion")
     // Import
-    implementation("com.opencsv:opencsv:5.9")
+    implementation("com.opencsv:opencsv:5.12.0")
 
     implementation(project(":common:logger"))
     implementation(project(":db"))

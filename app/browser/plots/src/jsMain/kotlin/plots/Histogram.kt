@@ -1,9 +1,5 @@
 package plots
 
-import kotlin.math.ceil
-import kotlin.math.floor
-import kotlin.uuid.ExperimentalUuidApi
-import kotlin.uuid.Uuid
 import kotlinx.browser.document
 import org.jetbrains.letsPlot.Stat
 import org.jetbrains.letsPlot.frontend.JsFrontendUtil
@@ -22,6 +18,11 @@ import util.ColumnScale
 import util.Container
 import util.Row
 import web.cssom.ClassName
+import web.dom.ElementId
+import kotlin.math.ceil
+import kotlin.math.floor
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 internal external interface BarchartProps : Props {
     var name: String
@@ -51,7 +52,7 @@ internal val BarChart = FC<BarchartProps> { props ->
         val plotDiv = JsFrontendUtil.createPlotDiv(plot)
         contentDiv.appendChild(plotDiv)
     }
-    div { this.id = id }
+    div { this.id = ElementId(id) }
 }
 
 enum class HistogramDisplay {

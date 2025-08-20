@@ -4,6 +4,7 @@ import wafna.fullstack.domain.EID
 import wafna.fullstack.domain.User
 import wafna.fullstack.domain.UserWip
 import wafna.fullstack.kdbc.AppDb
+import kotlin.time.ExperimentalTime
 
 interface UsersAPI {
     suspend fun create(userWip: UserWip): Result<User>
@@ -12,6 +13,7 @@ interface UsersAPI {
     suspend fun byUsername(username: String): Result<User?>
 }
 
+@OptIn(ExperimentalTime::class)
 internal fun usersAPI(db: AppDb): UsersAPI = object : UsersAPI {
     override suspend fun create(userWip: UserWip): Result<User> =
         db.transact { cx ->

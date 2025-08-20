@@ -5,6 +5,7 @@ import wafna.fullstack.domain.WithEID
 import wafna.fullstack.kdbc.Entity
 import wafna.fullstack.kdbc.requireInserts
 import java.sql.Connection
+import kotlin.time.ExperimentalTime
 
 /** Insert records that have a **WIP** lifecycle. */
 interface Insertable<W : Wip<E>, E : WithEID> {
@@ -34,6 +35,7 @@ private class InsertableImpl<W : Wip<E>, E : WithEID>(val entity: Entity<E>) : I
             },
         )
 
+    @OptIn(ExperimentalTime::class)
     override suspend fun insert(
         cx: Connection, items: Collection<W>
     ): List<E> =

@@ -5,6 +5,7 @@ import domain.DataBlockRecords
 import domain.HomePageData
 import web.file.File
 import kotlinx.serialization.json.Json
+import web.http.text
 
 interface DataApi {
     suspend fun homePage(): Result<HomePageData>

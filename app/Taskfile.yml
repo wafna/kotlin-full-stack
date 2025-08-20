@@ -3,9 +3,6 @@
 version: '3'
 silent: true
 
-vars:
-  GREETING: Hello, World!
-
 tasks:
   full:
     cmds:

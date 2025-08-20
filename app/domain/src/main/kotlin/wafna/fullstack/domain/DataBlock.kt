@@ -1,8 +1,10 @@
 package wafna.fullstack.domain
 
-import kotlinx.datetime.Instant
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 
 data class DataBlockWip(val owner: EID, val name: String) : Wip<DataBlock> {
+    @OptIn(ExperimentalTime::class)
     override fun reify(createdAt: Instant) = DataBlock(
         id = entityId(),
         owner = owner,
@@ -12,7 +14,7 @@ data class DataBlockWip(val owner: EID, val name: String) : Wip<DataBlock> {
     )
 }
 
-data class DataBlock(
+data class DataBlock @OptIn(ExperimentalTime::class) constructor(
     override val id: EID,
     val owner: EID,
     val name: String,

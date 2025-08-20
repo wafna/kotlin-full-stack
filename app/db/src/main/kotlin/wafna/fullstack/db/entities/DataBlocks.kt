@@ -4,6 +4,7 @@ import wafna.fullstack.domain.DataBlock
 import wafna.fullstack.kdbc.*
 import java.sql.Connection
 import java.sql.ResultSet
+import kotlin.time.ExperimentalTime
 
 object DataBlocks : Entity<DataBlock>(
     table = "fullstack.data_blocks",
@@ -15,6 +16,7 @@ object DataBlocks : Entity<DataBlock>(
         "deleted_at".field,
     )
 ) {
+    @OptIn(ExperimentalTime::class)
     override fun read(resultSet: ResultSet): DataBlock =
         resultSet.readRecord {
             DataBlock(
@@ -26,6 +28,7 @@ object DataBlocks : Entity<DataBlock>(
             )
         }
 
+    @OptIn(ExperimentalTime::class)
     override fun write(
         connection: Connection,
         record: DataBlock,

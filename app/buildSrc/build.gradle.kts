@@ -12,6 +12,6 @@ kotlin {
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.0-Beta1")
+    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.20-RC")
 //    implementation("org.jlleitschuh.gradle:ktlint-gradle:11.3.1")
 }

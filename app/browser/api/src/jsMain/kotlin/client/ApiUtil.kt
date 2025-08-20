@@ -5,16 +5,20 @@ import kotlin.Result.Companion.success
 import kotlinx.serialization.json.Json
 import util.makeURL
 import web.file.File
+import web.http.GET
 import web.http.Headers
+import web.http.POST
 import web.http.RequestCache
 import web.http.RequestCredentials
 import web.http.RequestInit
 import web.http.RequestMethod
-import web.http.RequestMethod.Companion.GET
-import web.http.RequestMethod.Companion.POST
 import web.http.RequestMode
 import web.http.Response
+import web.http.cors
 import web.http.fetch
+import web.http.noCache
+import web.http.sameOrigin
+import web.http.text
 
 fun RequestMethod.api(body: dynamic = null): RequestInit =
     RequestInit(
@@ -62,17 +66,17 @@ fun String.cleanMangling(): String = replace("_1\":", "\":")
 
 inline fun <reified T> toJson(body: T) = Json.encodeToString(body)
 
-suspend fun get(url: String): Result<Response> = GET.api().call(url).checkStatus(200)
+suspend fun get(url: String): Result<Response> = RequestMethod.GET.api().call(url).checkStatus(200)
 
 suspend inline fun <reified T> postJson(
     url: String,
     body: T,
-): Result<Response> = POST.api(toJson<T>(body)).call(url).checkStatus(200)
+): Result<Response> = RequestMethod.POST.api(toJson<T>(body)).call(url).checkStatus(200)
 
 suspend fun postFile(
     url: String,
     file: File,
-): Result<Response> = POST.api(file).call(url).checkStatus(200)
+): Result<Response> = RequestMethod.POST.api(file).call(url).checkStatus(200)
 
 suspend inline fun <reified T> Result<Response>.json(): Result<T> = map { response ->
     val body = response.text()

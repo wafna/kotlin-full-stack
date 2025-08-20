@@ -2,7 +2,7 @@ package wafna.fullstack.kdbc
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
-import io.kotest.assertions.fail
+import io.kotest.assertions.AssertionErrorBuilder.Companion.fail
 import javax.sql.DataSource
 import kotlinx.coroutines.runBlocking
 import org.testcontainers.containers.PostgreSQLContainer

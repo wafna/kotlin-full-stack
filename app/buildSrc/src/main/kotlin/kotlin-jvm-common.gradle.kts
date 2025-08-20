@@ -20,9 +20,9 @@ repositories {
 
 dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesCoreVersion")
-    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.7.1-0.6.x-compat")
 
-    val arrowVersion = "2.1.0"
+    val arrowVersion = "2.1.2"
     api("io.arrow-kt:arrow-core:$arrowVersion")
     api("io.arrow-kt:arrow-core-jvm:$arrowVersion")
 

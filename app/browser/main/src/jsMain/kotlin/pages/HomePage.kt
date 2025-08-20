@@ -29,8 +29,11 @@ import util.targetFiles
 import util.targetString
 import util.withIO
 import web.cssom.ClassName
+import web.dom.ElementId
 import web.file.File
 import web.html.InputType
+import web.html.file
+import web.html.text
 import web.prompts.alert
 
 /**
@@ -81,7 +84,7 @@ private fun ChildrenBuilder.createGrid(dataBlocks: List<DataBlock>) {
             listOf(
                 object : DisplayColumnText<DataBlock>("Name") {
                     override fun value(record: DataBlock): String = record.name
-                    override fun searchFunction(record: DataBlock): String? = record.name.lowercase()
+                    override fun searchFunction(record: DataBlock): String = record.name.lowercase()
                     override fun renderField(record: DataBlock): FC<Props> =
                         FC {
                             a {
@@ -113,13 +116,13 @@ private val CreateDataBlock = FC<CreateDataBlockProps> { props ->
         div {
             className = ClassName("form-group")
             label {
-                htmlFor = "data-block-name"
+                htmlFor = ElementId("data-block-name")
                 +"Name"
             }
             input {
                 className = ClassName("form-control")
                 type = InputType.text
-                id = "data-block-name"
+                id = ElementId("data-block-name")
                 name = "data-block-name"
                 value = dataBlockName
                 onChange = { dataBlockName = it.targetString }
@@ -128,12 +131,12 @@ private val CreateDataBlock = FC<CreateDataBlockProps> { props ->
         div {
             className = ClassName("form-group")
             label {
-                htmlFor = "data-block-file"
+                htmlFor = ElementId("data-block-file")
                 +"File"
             }
             input {
                 className = ClassName("inline form-control-file")
-                id = "import-snapshot-file"
+                id = ElementId("import-snapshot-file")
                 name = "import-snapshot-file"
                 type = InputType.file
                 onChange = { importFile = it.targetFiles[0] }

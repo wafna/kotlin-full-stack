@@ -7,19 +7,22 @@ import com.squareup.moshi.ToJson
 import com.squareup.moshi.adapter
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import java.util.*
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 import wafna.fullstack.api.domain.DataBlockRecords
 import wafna.fullstack.domain.DataBlock
 import wafna.fullstack.domain.DataRecord
 import wafna.fullstack.domain.User
 import wafna.fullstack.server.domain.AuthResult
 import wafna.fullstack.server.domain.HomePageData
+import kotlin.time.ExperimentalTime
 
 @Suppress("unused")
 private object InstantAdapter {
+    @OptIn(ExperimentalTime::class)
     @ToJson
     fun toJson(value: Instant): String = value.toEpochMilliseconds().toString()
 
+    @OptIn(ExperimentalTime::class)
     @FromJson
     fun fromJson(value: String): Instant = Instant.fromEpochMilliseconds(value.toLong())
 }

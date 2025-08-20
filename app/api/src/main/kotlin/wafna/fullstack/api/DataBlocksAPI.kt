@@ -9,6 +9,7 @@ import wafna.fullstack.domain.DataRecordWip
 import wafna.fullstack.domain.EID
 import wafna.fullstack.kdbc.AppDb
 import wafna.fullstack.kdbc.paramAny
+import kotlin.time.ExperimentalTime
 
 interface DataBlocksAPI {
     suspend fun create(
@@ -25,6 +26,7 @@ interface DataBlocksAPI {
 
 }
 
+@OptIn(ExperimentalTime::class)
 internal fun dataBlocksAPI(db: AppDb): DataBlocksAPI =
     object : DataBlocksAPI {
         override suspend fun create(

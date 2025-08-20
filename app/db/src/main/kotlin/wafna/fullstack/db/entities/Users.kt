@@ -4,6 +4,7 @@ import wafna.fullstack.domain.User
 import wafna.fullstack.kdbc.*
 import java.sql.Connection
 import java.sql.ResultSet
+import kotlin.time.ExperimentalTime
 
 object Users : Entity<User>(
     table = "fullstack.users",
@@ -15,6 +16,7 @@ object Users : Entity<User>(
             "deleted_at".field,
         ),
 ) {
+    @OptIn(ExperimentalTime::class)
     override fun read(resultSet: ResultSet): User =
         resultSet.readRecord {
             User(
@@ -25,6 +27,7 @@ object Users : Entity<User>(
             )
         }
 
+    @OptIn(ExperimentalTime::class)
     override fun write(
         connection: Connection,
         record: User,
