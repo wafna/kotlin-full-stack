@@ -2,31 +2,22 @@ package wafna.fullstack.server
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
-import io.ktor.http.CacheControl
-import io.ktor.http.HttpHeaders
-import io.ktor.http.HttpMethod
-import io.ktor.server.application.Application
-import io.ktor.server.application.install
-import io.ktor.server.engine.applicationEnvironment
-import io.ktor.server.engine.connector
-import io.ktor.server.engine.embeddedServer
-import io.ktor.server.http.content.staticFiles
-import io.ktor.server.netty.Netty
-import io.ktor.server.plugins.cors.routing.CORS
-import io.ktor.server.routing.getAllRoutes
-import io.ktor.server.routing.route
-import io.ktor.server.routing.routing
-import io.ktor.server.sessions.SessionTransportTransformerEncrypt
-import io.ktor.server.sessions.Sessions
-import io.ktor.server.sessions.cookie
-import io.ktor.util.hex
-import java.io.File
+import io.ktor.http.*
+import io.ktor.server.application.*
+import io.ktor.server.cio.*
+import io.ktor.server.engine.*
+import io.ktor.server.http.content.*
+import io.ktor.server.plugins.cors.routing.*
+import io.ktor.server.routing.*
+import io.ktor.server.sessions.*
+import io.ktor.util.*
 import wafna.fullstack.api.API
 import wafna.fullstack.kdbc.AppDb
 import wafna.fullstack.kdbc.appDb
-import wafna.fullstack.server.routes.sessionRoutes
 import wafna.fullstack.server.routes.dataRoutes
+import wafna.fullstack.server.routes.sessionRoutes
 import wafna.fullstack.util.LazyLogger
+import java.io.File
 
 private object Server
 
@@ -49,7 +40,7 @@ internal suspend fun runDB(config: DatabaseConfig, borrow: suspend (AppDb) -> Un
 
 internal fun runServer(api: API, config: ServerConfig) {
     embeddedServer(
-        factory = Netty,
+        factory = CIO,
         environment = applicationEnvironment { log = logger.log },
         configure = {
             connector {
