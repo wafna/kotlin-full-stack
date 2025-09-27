@@ -58,14 +58,14 @@ abstract class Entity<R>(val table: String, val fields: List<Field>) {
      * @param tail The SQL following the head, e.g. JOIN and WHERE.
      * @param params The values of the arguments in the SQL in lexical order.
      */
-    fun select(
+    suspend fun select(
         connection: Connection,
         alias: String,
         tail: String,
         vararg params: Param,
     ): List<R> = connection.select("${selectHead(alias)} $tail", *params) { readRecords(::read) }
 
-    fun select(
+    suspend fun select(
         connection: Connection,
         alias: String,
         tail: String,
@@ -82,7 +82,7 @@ abstract class Entity<R>(val table: String, val fields: List<Field>) {
     private fun insertHead(fieldNames: Iterable<String>): String =
         "INSERT INTO $table (${fieldNames.joinToString(", ")}) VALUES (${fieldList(namesToFields(fieldNames))})"
 
-    fun insert(
+    suspend fun insert(
         connection: Connection,
         records: Iterable<R>,
     ): IntArray =
@@ -91,7 +91,7 @@ abstract class Entity<R>(val table: String, val fields: List<Field>) {
             records = records.transformer { write(connection, it) },
         )
 
-    fun update(
+    suspend fun update(
         connection: Connection,
         fieldNames: Iterable<String>,
         where: String,
@@ -102,7 +102,7 @@ abstract class Entity<R>(val table: String, val fields: List<Field>) {
             *params,
         )
 
-    fun update(
+    suspend fun update(
         connection: Connection,
         fieldNames: Iterable<String>,
         where: String,

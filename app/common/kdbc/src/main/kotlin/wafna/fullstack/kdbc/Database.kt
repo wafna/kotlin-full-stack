@@ -56,7 +56,7 @@ suspend fun <T> DataSource.runTransaction(borrow: suspend Connection.() -> T): T
     withTransaction { it.borrow() }
 
 /** executeQuery() */
-fun <T> Connection.select(
+suspend fun <T> Connection.select(
     sql: String,
     vararg params: Param,
     reader: ResultSet.() -> T,
@@ -70,7 +70,7 @@ fun <T> Connection.select(
  * executeBatch() In order to simplify usage and not have a full mirrored collection of params, the
  * records are presented as an Iterator. The iterator produces param lists on demand.
  */
-fun Connection.insert(
+suspend fun Connection.insert(
     sql: String,
     records: Iterator<List<Param>>,
 ): IntArray =
@@ -83,7 +83,7 @@ fun Connection.insert(
     }
 
 /** executeUpdate() */
-fun Connection.update(
+suspend fun Connection.update(
     sql: String,
     vararg params: Param,
 ): Int =
@@ -93,7 +93,7 @@ fun Connection.update(
     }
 
 /** executeUpdate() */
-fun Connection.update(
+suspend fun Connection.update(
     sql: String,
     params: Iterable<Param>,
 ): Int =
@@ -103,9 +103,9 @@ fun Connection.update(
     }
 
 @Suppress("SqlSourceToSinkFlow")
-inline fun <T> Connection.onStatement(
+suspend inline fun <T> Connection.onStatement(
     sql: String,
-    borrow: PreparedStatement.() -> T,
+    borrow: suspend PreparedStatement.() -> T,
 ) = prepareStatement(sql).use { it.borrow() }
 
 /**
