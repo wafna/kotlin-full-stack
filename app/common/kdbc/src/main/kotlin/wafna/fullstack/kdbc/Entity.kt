@@ -1,7 +1,6 @@
 package wafna.fullstack.kdbc
 
 import java.sql.Connection
-import java.sql.ResultSet
 
 /** An element of the projection that maps to an object These are used to generate SQL. */
 data class Field(val name: String, val sqlType: String? = null) {
@@ -36,42 +35,39 @@ abstract class Entity<R>(val table: String, val fields: List<Field>) {
 
     val fieldMap = fields.associateBy { it.name }
 
-    /** Marshal one row of a ResultSet into a record. */
-    abstract fun read(resultSet: ResultSet): R
+    abstract fun read(resultSet: ResultSetFieldIterator): R
 
     /**
      * Create a list of parameter setters in the order of the fields from a record. Some types require
      * the connection to instantiate, e.g. java.sql.Array.
      */
-    abstract fun write(
-        connection: Connection,
-        record: R,
-    ): List<Param>
+    context(_: Connection)
+    abstract fun write(record: R): List<Param>
 
     /** Generates the head of a SELECT statement. */
-    fun selectHead(alias: String = ""): String =
-        "SELECT ${projection(alias)} FROM $table${if (alias.isEmpty()) "" else " $alias"}"
+    fun selectHead(alias: String = ""): String {
+        return "SELECT ${projection(alias)} FROM $table${if (alias.isEmpty()) "" else " $alias"}"
+    }
 
     /**
-     * @param connection The transaction holder.
      * @param alias The alias applied to the table in the head.
      * @param tail The SQL following the head, e.g. JOIN and WHERE.
      * @param params The values of the arguments in the SQL in lexical order.
      */
+    context(cx: Connection)
     suspend fun select(
-        connection: Connection,
         alias: String,
         tail: String,
         vararg params: Param,
-    ): List<R> = connection.select("${selectHead(alias)} $tail", *params) { readRecords(::read) }
+    ): List<R> = select("${selectHead(alias)} $tail", *params) { readRecords(::read) }
 
+    context(cx: Connection)
     suspend fun select(
-        connection: Connection,
         alias: String,
         tail: String,
         params: Collection<Param>,
     ): List<R> =
-        connection.select("${selectHead(alias)} $tail", *params.toTypedArray()) {
+        select("${selectHead(alias)} $tail", *params.toTypedArray()) {
             readRecords(::read)
         }
 
@@ -82,33 +78,33 @@ abstract class Entity<R>(val table: String, val fields: List<Field>) {
     private fun insertHead(fieldNames: Iterable<String>): String =
         "INSERT INTO $table (${fieldNames.joinToString(", ")}) VALUES (${fieldList(namesToFields(fieldNames))})"
 
+    context(cx: Connection)
     suspend fun insert(
-        connection: Connection,
         records: Iterable<R>,
     ): IntArray =
-        connection.insert(
+        insert(
             sql = insertHead(fields.map { it.name }),
-            records = records.transformer { write(connection, it) },
+            records = records.transformer { write(it) },
         )
 
+    context(cx: Connection)
     suspend fun update(
-        connection: Connection,
         fieldNames: Iterable<String>,
         where: String,
         vararg params: Param,
     ): Int =
-        connection.update(
+        update(
             "UPDATE $table SET ${fieldListNamed(namesToFields(fieldNames))} WHERE $where",
             *params,
         )
 
+    context(cx: Connection)
     suspend fun update(
-        connection: Connection,
         fieldNames: Iterable<String>,
         where: String,
         params: Collection<Param>,
     ): Int =
-        connection.update(
+        update(
             "UPDATE $table SET ${fieldListNamed(namesToFields(fieldNames))} WHERE $where",
             params,
         )

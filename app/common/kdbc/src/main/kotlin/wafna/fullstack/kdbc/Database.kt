@@ -1,44 +1,25 @@
 package wafna.fullstack.kdbc
 
-import arrow.core.raise.result
-import kotlinx.coroutines.CancellationException
+import javax.sql.DataSource
+import wafna.fullstack.util.LazyLogger
 import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet
-import javax.sql.DataSource
 
-/** Ignores CancellationException. */
-private suspend fun <T> cancellableResult(block: suspend () -> T): Result<T> =
-    result {
-        try {
-            block()
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Throwable) {
-            raise(RuntimeException(e))
-        }
-    }
+private object Database
 
-interface Database {
-    val dataSource: DataSource
-    suspend fun <T> transact(borrow: suspend (Connection) -> T): Result<T>
-}
-
-open class DatabaseImpl(override val dataSource: DataSource) : Database {
-    override suspend fun <T> transact(borrow: suspend (Connection) -> T): Result<T> =
-        cancellableResult { dataSource.withTransaction { borrow(it) } }
-}
+val log = LazyLogger<Database>()
 
 /**
  * Execute the given block within a transaction. The transaction is committed if the block completes
  * normally and rolled back if it throws an exception.
  */
-suspend fun <T> DataSource.withTransaction(borrow: suspend (Connection) -> T): T =
+suspend fun <T> DataSource.withTransaction(borrow: suspend context(Connection) () -> T): T =
     connection.use { connection ->
         connection.autoCommit = false
         connection.beginRequest()
         try {
-            borrow(connection).also { connection.commit() }
+            context(connection) { borrow() }.also { connection.commit() }
         } catch (e: Throwable) {
             // Ok to catch CancellationExceptions here because we're about to rethrow them.
             connection.rollback()
@@ -48,65 +29,65 @@ suspend fun <T> DataSource.withTransaction(borrow: suspend (Connection) -> T): T
         }
     }
 
-/**
- * Execute the given block within a transaction. The transaction is committed if the block completes
- * normally and rolled back if it throws an exception.
- */
-suspend fun <T> DataSource.runTransaction(borrow: suspend Connection.() -> T): T =
-    withTransaction { it.borrow() }
-
 /** executeQuery() */
-suspend fun <T> Connection.select(
+context(_: Connection)
+suspend fun <T> select(
     sql: String,
     vararg params: Param,
     reader: ResultSet.() -> T,
-): T =
-    onStatement(sql) {
-        setParams(params)
-        executeQuery().use { it.reader() }
-    }
+): T = withStatement(sql) {
+    setParams(params)
+    executeQuery().use { it.reader() }
+}
 
 /**
- * executeBatch() In order to simplify usage and not have a full mirrored collection of params, the
- * records are presented as an Iterator. The iterator produces param lists on demand.
+ * executeBatch()
+ * To simplify usage and reduce memory footprint, the records are presented as an Iterator.
+ * Callers should produce the param lists on demand.
  */
-suspend fun Connection.insert(
+context(_: Connection)
+suspend fun insert(
     sql: String,
     records: Iterator<List<Param>>,
-): IntArray =
-    onStatement(sql) {
-        records.forEach { record ->
-            setParams(record)
-            addBatch()
-        }
-        executeBatch()
+): IntArray = withStatement(sql) {
+    records.forEach { record ->
+        setParams(record)
+        addBatch()
     }
+    executeBatch()
+}
 
 /** executeUpdate() */
-suspend fun Connection.update(
+context(cx: Connection)
+suspend fun update(
     sql: String,
     vararg params: Param,
-): Int =
-    onStatement(sql) {
-        setParams(params)
-        executeUpdate()
-    }
+): Int = withStatement(sql) {
+    setParams(params)
+    executeUpdate()
+}
 
 /** executeUpdate() */
-suspend fun Connection.update(
+context(cx: Connection)
+suspend fun update(
     sql: String,
     params: Iterable<Param>,
-): Int =
-    onStatement(sql) {
-        setParams(params)
-        executeUpdate()
-    }
+): Int = withStatement(sql) {
+    setParams(params)
+    executeUpdate()
+}
 
-@Suppress("SqlSourceToSinkFlow")
-suspend inline fun <T> Connection.onStatement(
+context(cx: Connection)
+suspend inline fun <T> withStatement(
     sql: String,
     borrow: suspend PreparedStatement.() -> T,
-) = prepareStatement(sql).use { it.borrow() }
+): T {
+    log.debug { "Executing SQL\n```sql\n$sql\n```" }
+    return runCatching { cx.prepareStatement(sql).use { it.borrow() } }
+        .getOrElse {
+            throw RuntimeException("Error while executing SQL\n$sql", it)
+        }
+}
 
 /**
  * Interpolates the params into the prepared statement in order.

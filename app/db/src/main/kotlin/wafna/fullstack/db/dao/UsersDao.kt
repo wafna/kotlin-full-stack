@@ -1,19 +1,25 @@
 package wafna.fullstack.db.dao
 
-import wafna.fullstack.db.aspects.*
+import wafna.fullstack.db.aspects.Insertable
+import wafna.fullstack.db.aspects.SelectableByEntityId
+import wafna.fullstack.db.aspects.SoftDeletable
+import wafna.fullstack.db.aspects.insertable
+import wafna.fullstack.db.aspects.selectableByEntityId
+import wafna.fullstack.db.aspects.softDeletable
 import wafna.fullstack.db.entities.Users
 import wafna.fullstack.domain.User
 import wafna.fullstack.domain.UserWip
 import wafna.fullstack.kdbc.optional
-import java.sql.Connection
 import wafna.fullstack.kdbc.paramString
+import java.sql.Connection
 
 private typealias InsertableUser = Insertable<UserWip, User>
 
 private typealias SelectableByEntityIdUser = SelectableByEntityId<User>
 
 interface UsersDao : InsertableUser, SelectableByEntityIdUser, SoftDeletable {
-    suspend fun byUsername(cx: Connection, username: String): User?
+    context(cx: Connection)
+    suspend fun byUsername(username: String): User?
 }
 
 private class UsersDaoImpl(
@@ -24,8 +30,9 @@ private class UsersDaoImpl(
     InsertableUser by insertable,
     SelectableByEntityIdUser by selectableByEntityId,
     SoftDeletable by deletable {
-    override suspend fun byUsername(cx: Connection, username: String): User? =
-        Users.select(cx, "u", "WHERE u.deleted_at IS NULL AND u.username = ?", username.paramString).optional
+    context(cx: Connection)
+    override suspend fun byUsername(username: String): User? =
+        Users.select("u", "WHERE u.deleted_at IS NULL AND u.username = ?", username.paramString).optional
 }
 
 fun usersDao(): UsersDao = UsersDaoImpl(

@@ -4,22 +4,21 @@ import io.kotest.assertions.AssertionErrorBuilder.Companion.fail
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 import java.sql.Connection
-import java.sql.ResultSet
 import java.sql.Timestamp
-import java.util.UUID
+import java.util.*
 import javax.sql.DataSource
+import kotlin.text.insert
 import kotlinx.coroutines.runBlocking
+import org.junit.jupiter.api.Test
 import kotlin.time.Clock
 import kotlin.time.Instant
-import org.junit.jupiter.api.Test
-import kotlin.time.ExperimentalTime
 
 enum class DenizenType(val sql: String) {
     Knight("knight"),
     Knave("knave"),
 }
 
-data class Denizen @OptIn(ExperimentalTime::class) constructor(
+data class Denizen(
     val id: UUID,
     val name: String?,
     val index: Int?,
@@ -29,7 +28,7 @@ data class Denizen @OptIn(ExperimentalTime::class) constructor(
 
 // Create the schema for our testing database.
 suspend fun DataSource.initTestDB() {
-    runTransaction {
+    withTransaction {
         update("CREATE TYPE denizen_types AS ENUM ('knight', 'knave')")
         update(
             """CREATE TABLE denizens (
@@ -40,25 +39,21 @@ suspend fun DataSource.initTestDB() {
               |  denizen_type denizen_types,
               |  created_at  TIMESTAMP NOT NULL,
               |  deleted_at  TIMESTAMP DEFAULT NULL
-              |)"""
-                .trimMargin(),
+              |)""".trimMargin(),
         )
     }
 }
 
 // The nanos resolution of the timestamp gets lost in the round trip to the database
 // so we truncate them immediately.
-@OptIn(ExperimentalTime::class)
 fun Instant.dropNanos(): Instant = Instant.fromEpochMilliseconds(toEpochMilliseconds())
 
-@OptIn(ExperimentalTime::class)
 fun Timestamp.toKotlinInstant(): Instant = Instant.fromEpochMilliseconds(time)
 
 // Custom getters...
 
 fun ResultSetFieldIterator.getUUID(): UUID? = getObject() as UUID
 
-@OptIn(ExperimentalTime::class)
 fun ResultSetFieldIterator.getInstant(): Instant? = getTimestamp()?.toKotlinInstant()
 
 fun ResultSetFieldIterator.getDenizenType(): DenizenType? =
@@ -89,7 +84,6 @@ fun withTestDB(borrow: suspend (DataSource) -> Unit) =
     }
 
 class TestDB {
-    @OptIn(ExperimentalTime::class)
     val denizen =
         object :
             Entity<Denizen>(
@@ -103,8 +97,8 @@ class TestDB {
                         "created_at".field,
                     ),
             ) {
-            override fun read(resultSet: ResultSet): Denizen =
-                resultSet.readRecord {
+            override fun read(resultSet: ResultSetFieldIterator): Denizen =
+                with(resultSet) {
                     Denizen(
                         id = getUUID()!!,
                         name = getString(),
@@ -114,8 +108,8 @@ class TestDB {
                     )
                 }
 
+            context(_: Connection)
             override fun write(
-                connection: Connection,
                 record: Denizen,
             ): List<Param> =
                 record.run {
@@ -123,11 +117,10 @@ class TestDB {
                 }
         }
 
-    @OptIn(ExperimentalTime::class)
     @Test
     fun testDenizen() =
         withTestDB { db ->
-            db.withTransaction { cx ->
+            db.withTransaction {
                 val knight1 =
                     Denizen(
                         id = UUID.randomUUID(),
@@ -144,18 +137,18 @@ class TestDB {
                         denizenType = DenizenType.Knave,
                         created = Clock.System.now().dropNanos(),
                     )
-                denizen.insert(cx, listOf(knight1, knave1)).requireInserts(2)
-                denizen.select(cx, "d", "WHERE d.id = ?", knight1.id.paramAny).optional!!.also {
+                denizen.insert(listOf(knight1, knave1)).requireInserts(2)
+                denizen.select("d", "WHERE d.id = ?", knight1.id.paramAny).optional!!.also {
                     it shouldBe knight1
                 }
-                denizen.select(cx, "d", "WHERE d.id = ?", UUID.randomUUID().paramAny).optional.shouldBeNull()
+                denizen.select("d", "WHERE d.id = ?", UUID.randomUUID().paramAny).optional.shouldBeNull()
                 val newName = "NEW NAME"
                 val index = 1
-                denizen.update(cx, listOf("name"), "index = ?", newName.paramString, index.paramInt).requireUpdates(1)
-                denizen.select(cx, "d", "WHERE d.index = ?", index.paramInt).optional!!.also {
+                denizen.update(listOf("name"), "index = ?", newName.paramString, index.paramInt).requireUpdates(1)
+                denizen.select("d", "WHERE d.index = ?", index.paramInt).optional!!.also {
                     it shouldBe knight1.copy(name = newName)
                 }
-                denizen.select(cx, "d", "WHERE ?", true.paramBoolean).apply { size shouldBe 2 }
+                denizen.select("d", "WHERE ?", true.paramBoolean).apply { size shouldBe 2 }
             }
         }
 }

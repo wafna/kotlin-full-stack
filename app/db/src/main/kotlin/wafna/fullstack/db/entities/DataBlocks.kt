@@ -1,10 +1,18 @@
 package wafna.fullstack.db.entities
 
+import kotlin.time.ExperimentalTime
 import wafna.fullstack.domain.DataBlock
-import wafna.fullstack.kdbc.*
+import wafna.fullstack.kdbc.Entity
+import wafna.fullstack.kdbc.Param
+import wafna.fullstack.kdbc.ResultSetFieldIterator
+import wafna.fullstack.kdbc.field
+import wafna.fullstack.kdbc.getString
+import wafna.fullstack.kdbc.paramAny
+import wafna.fullstack.kdbc.paramInstant
+import wafna.fullstack.kdbc.paramString
+import wafna.fullstack.kdbc.readRecord
 import java.sql.Connection
 import java.sql.ResultSet
-import kotlin.time.ExperimentalTime
 
 object DataBlocks : Entity<DataBlock>(
     table = "fullstack.data_blocks",
@@ -17,7 +25,7 @@ object DataBlocks : Entity<DataBlock>(
     )
 ) {
     @OptIn(ExperimentalTime::class)
-    override fun read(resultSet: ResultSet): DataBlock =
+    override fun read(resultSet: ResultSetFieldIterator): DataBlock =
         resultSet.readRecord {
             DataBlock(
                 id = getEID()!!,
@@ -29,10 +37,8 @@ object DataBlocks : Entity<DataBlock>(
         }
 
     @OptIn(ExperimentalTime::class)
-    override fun write(
-        connection: Connection,
-        record: DataBlock,
-    ): List<Param> = record.run {
+    context(cx: Connection)
+    override fun write(record: DataBlock): List<Param> = record.run {
         listOf(
             id.paramAny,
             owner.paramAny,

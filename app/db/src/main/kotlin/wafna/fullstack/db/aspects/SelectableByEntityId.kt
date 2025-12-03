@@ -11,66 +11,57 @@ import java.sql.Connection
 /** Select records that have an *id* field. */
 interface SelectableByEntityId<E : WithEID> {
     // Primarily for testing
-    suspend fun listAll(cx: Connection): List<E>
+    context(cx: Connection)
+    suspend fun listAll(): List<E>
 
-    suspend fun forId(
-        cx: Connection,
-        id: EID,
-    ): E?
+    context(cx: Connection)
+    suspend fun forId(id: EID): E?
 
-    suspend fun forIds(
-        cx: Connection,
-        ids: Collection<EID>,
-    ): List<E>
+    context(cx: Connection)
+    suspend fun forIds(ids: Collection<EID>): List<E>
 
-    suspend fun listAllActive(cx: Connection): List<E>
+    context(cx: Connection)
+    suspend fun listAllActive(): List<E>
 
-    suspend fun forIdActive(
-        cx: Connection,
-        id: EID,
-    ): E?
+    context(cx: Connection)
+    suspend fun forIdActive(id: EID): E?
 
-    suspend fun forIdsActive(
-        cx: Connection,
-        ids: Collection<EID>,
-    ): List<E>
+    context(cx: Connection)
+    suspend fun forIdsActive(ids: Collection<EID>): List<E>
 }
 
 private class SelectableByEntityIdImpl<E : WithEID>(val entity: Entity<E>) :
     SelectableByEntityId<E> {
-    override suspend fun listAll(cx: Connection): List<E> = entity.select(cx, "", "")
+    context(cx: Connection)
+    override suspend fun listAll(): List<E> =
+        entity.select("", "")
 
-    override suspend fun forId(
-        cx: Connection,
-        id: EID,
-    ): E? = entity.select(cx, "", "WHERE id = ?", id.paramAny).optional
+    context(cx: Connection)
+    override suspend fun forId(id: EID): E? =
+        entity.select("", "WHERE id = ?", id.paramAny).optional
 
-    override suspend fun forIds(
-        cx: Connection,
-        ids: Collection<EID>,
-    ): List<E> =
+    context(cx: Connection)
+    override suspend fun forIds(ids: Collection<EID>): List<E> =
         if (ids.isEmpty()) {
             emptyList()
         } else {
-            entity.select(cx, "", "WHERE id IN ${inList(ids.size)}", ids.map { it.paramAny })
+            entity.select("", "WHERE id IN ${inList(ids.size)}", ids.map { it.paramAny })
         }
 
-    override suspend fun listAllActive(cx: Connection): List<E> = entity.select(cx, "", "WHERE deleted_at IS NULL")
+    context(cx: Connection)
+    override suspend fun listAllActive(): List<E> =
+        entity.select("", "WHERE deleted_at IS NULL")
 
-    override suspend fun forIdActive(
-        cx: Connection,
-        id: EID,
-    ): E? = entity.select(cx, "", "WHERE deleted_at IS NULL AND id = ?", id.paramAny).optional
+    context(cx: Connection)
+    override suspend fun forIdActive(id: EID): E? =
+        entity.select("", "WHERE deleted_at IS NULL AND id = ?", id.paramAny).optional
 
-    override suspend fun forIdsActive(
-        cx: Connection,
-        ids: Collection<EID>,
-    ): List<E> =
+    context(cx: Connection)
+    override suspend fun forIdsActive(ids: Collection<EID>): List<E> =
         if (ids.isEmpty()) {
             emptyList()
         } else {
             entity.select(
-                cx,
                 "",
                 " WHERE deleted_at IS NULL AND id IN ${inList(ids.size)}",
                 ids.map { it.paramAny },

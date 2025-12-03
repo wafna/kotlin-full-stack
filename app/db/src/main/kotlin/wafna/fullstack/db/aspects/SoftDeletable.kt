@@ -13,8 +13,8 @@ import kotlin.time.ExperimentalTime
 /** Soft delete records that have a *deleted_at* field. */
 interface SoftDeletable {
     @OptIn(ExperimentalTime::class)
+    context(cx: Connection)
     suspend fun softDelete(
-        cx: Connection,
         id: EID,
         at: Instant = Clock.System.now(),
     )
@@ -22,12 +22,12 @@ interface SoftDeletable {
 
 private class SoftDeletableImpl(val tableName: String) : SoftDeletable {
     @OptIn(ExperimentalTime::class)
+    context(cx: Connection)
     override suspend fun softDelete(
-        cx: Connection,
         id: EID,
         at: Instant,
     ) {
-        cx.update("UPDATE $tableName SET deleted_at = ? WHERE id = ?", at.paramInstant, id.paramAny)
+        update("UPDATE $tableName SET deleted_at = ? WHERE id = ?", at.paramInstant, id.paramAny)
             .requireUpdates(1)
     }
 }
