@@ -3,7 +3,7 @@
 version: '3'
 silent: true
 # Can't be set in the included taskfile.
-dotenv: [database/settings.env]
+dotenv: [ database/settings.env ]
 includes:
   app:
     taskfile: ./app/Taskfile.yml
@@ -12,6 +12,16 @@ includes:
     taskfile: ./database/Taskfile.yml
     dir: ./database
 tasks:
+  # App
+  test:
+    deps: [ app:test ]
+  build:
+    deps: [ app:build ]
+  clean:
+    deps: [ app:clean ]
+  rebuild:
+    deps: [ clean, build ]
+  # Util
   ports:
     cmds:
       - lsof -nP -iTCP -sTCP:LISTEN

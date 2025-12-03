@@ -12,20 +12,20 @@ import wafna.fullstack.server.domain.HomePageData
 import wafna.fullstack.server.withSession
 
 internal fun Route.dataRoutes(api: API) {
-    fget("/data-blocks") {
+    bracketGet("/data-blocks") {
         withSession { actorId ->
             val dataBlocks = api.dataBlocks.byOwner(actorId).internalServerError()
             respondJson(HomePageData(dataBlocks).toJson())
         }
     }
-    fget("/data-block-records/{data-block-id}") {
+    bracketGet("/data-block-records/{data-block-id}") {
         val dataBlockId = requireParameter("data-block-id").toEntityId()
         withSession { actorId ->
             val block = api.dataBlocks.records(dataBlockId).internalServerError()
             respondJson(block.toJson())
         }
     }
-    fpost("/data-blocks/{name}") {
+    bracketPost("/data-blocks/{name}") {
         withSession { actor ->
             val name = requireParameter("name")
             val data = receive<ByteArray>().let { bytes ->

@@ -1,11 +1,13 @@
 package wafna.fullstack.server.routes
 
-import arrow.core.Either
-import io.ktor.http.*
-import io.ktor.server.application.*
-import io.ktor.server.request.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
+import io.ktor.http.HttpStatusCode
+import io.ktor.server.application.ApplicationCall
+import io.ktor.server.request.httpMethod
+import io.ktor.server.request.uri
+import io.ktor.server.response.respondText
+import io.ktor.server.routing.Route
+import io.ktor.server.routing.get
+import io.ktor.server.routing.post
 import wafna.fullstack.util.LazyLogger
 
 private object Routes
@@ -24,34 +26,29 @@ inline fun <reified T> ApplicationCall.requireParameter(
     runCatching { converter(requireParameter(name)) }
         .getOrElse { e -> httpError(HttpStatusCode.BadRequest, "Parameter $name must be ${T::class.simpleName}.") }
 
-/** Get mandatory Int request parameter. */
-internal fun ApplicationCall.requireParameterInt(name: String): Int =
-    requireParameter(name) { it.toInt() }
-
-/** Route with error bracket. */
-internal fun Route.fget(
+internal fun Route.bracketGet(
     path: String,
     body: suspend ApplicationCall.() -> Unit
-) = get(path) { call.bracketBody { body() } }
+) = get(path) { call.bracketResponse { body() } }
 
-/** Route with error bracket. */
-internal fun Route.fpost(
+internal fun Route.bracketPost(
     path: String,
     body: suspend ApplicationCall.() -> Unit
-) = post(path) { call.bracketBody { body() } }
+) = post(path) { call.bracketResponse { body() } }
 
-internal suspend fun ApplicationCall.bracketBody(body: suspend ApplicationCall.() -> Unit) =
-    Either.catch {
+/**
+ * The last stop for any uncaught exceptions in a route.
+ * HTTP error status codes are reserved for genuine errors, e.g. bad request, which is a bug.
+ * User error messages are handled separately in the browser, hence the OK.
+ */
+internal suspend fun ApplicationCall.bracketResponse(body: suspend ApplicationCall.() -> Unit) =
+    try {
         body()
-    }.onLeft { e ->
-        log.error(e) { "Internal Error: ${request.httpMethod.value} ${request.uri}" }
+    } catch (e: Throwable) {
+        log.error(e) { "Exception in HTTP chain: ${request.httpMethod.value} ${request.uri}" }
         when (e) {
-            is HttpException ->
-                response.status(e.status)
-
-            else ->
-                response.status(HttpStatusCode.InternalServerError)
-
+            is HttpException -> response.status(e.status)
+            else -> response.status(HttpStatusCode.InternalServerError)
         }
     }
 

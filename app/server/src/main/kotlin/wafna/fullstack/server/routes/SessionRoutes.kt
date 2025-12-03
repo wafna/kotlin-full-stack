@@ -13,7 +13,7 @@ import wafna.fullstack.server.domain.AuthResult
 import wafna.fullstack.server.setCookie
 
 internal fun Route.sessionRoutes(api: API) {
-    fget("/login") {
+    bracketGet("/login") {
         val username = requireParameter("username")
         val user = api.users.byUsername(username).internalServerError()?.also {
             setCookie(it)
@@ -22,7 +22,7 @@ internal fun Route.sessionRoutes(api: API) {
         respondJson(AuthResult(user).toJson())
     }
 
-    fget("/whoami") {
+    bracketGet("/whoami") {
         when (val actorId = sessions.get<UserSession>()?.id?.toEntityId()) {
             null -> {
                 deleteCookie()
@@ -44,7 +44,7 @@ internal fun Route.sessionRoutes(api: API) {
         }
     }
 
-    fget("/logout") {
+    bracketGet("/logout") {
         deleteCookie()
         respond(HttpStatusCode.OK)
     }

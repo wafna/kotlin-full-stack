@@ -12,6 +12,6 @@ dependencies {
 
     testImplementation(project(":common:test"))
     testImplementation("com.zaxxer:HikariCP:$hikariVersion")
-    testImplementation("org.postgresql:postgresql:42.7.7")
+    testImplementation("org.postgresql:postgresql:42.7.8")
     testImplementation(project(":common:test"))
 }

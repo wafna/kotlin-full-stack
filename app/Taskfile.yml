@@ -27,10 +27,10 @@ tasks:
       - ./gradlew dokkaGenerate
   # Util.
 
-  # Check for out of date libraries.
-  deps:
+  # Check for out of date dependencies.
+  dep-update:
     cmds:
-      - ./gradlew dependencyUpdates
+      - ./gradlew --no-parallel dependencyUpdates | tee ../.local/dependency-update.txt
   # After changing deps in the browser project.
   yarn:
     cmds:
