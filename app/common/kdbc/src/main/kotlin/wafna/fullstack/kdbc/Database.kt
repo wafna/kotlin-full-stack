@@ -21,7 +21,6 @@ suspend fun <T> DataSource.withTransaction(borrow: suspend context(Connection) (
         try {
             context(connection) { borrow() }.also { connection.commit() }
         } catch (e: Throwable) {
-            // Ok to catch CancellationExceptions here because we're about to rethrow them.
             connection.rollback()
             throw e
         } finally {

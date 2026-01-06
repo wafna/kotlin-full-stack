@@ -76,7 +76,9 @@ abstract class Entity<R>(val table: String, val fields: List<Field>) {
      * that are not inserted (e.g. deleted_at). This enforces that the fields exist.
      */
     private fun insertHead(fieldNames: Iterable<String>): String =
-        "INSERT INTO $table (${fieldNames.joinToString(", ")}) VALUES (${fieldList(namesToFields(fieldNames))})"
+        "INSERT INTO $table (${fieldNames.joinToString(", ") { "\"$it\"" }}) VALUES (${
+            fieldList(namesToFields(fieldNames))
+        })"
 
     context(cx: Connection)
     suspend fun insert(
@@ -124,8 +126,8 @@ abstract class Entity<R>(val table: String, val fields: List<Field>) {
         fun fieldListNamed(fields: Iterable<Field>): String =
             fields.joinToString(", ") {
                 when (val sqlType = it.sqlType) {
-                    null -> "${it.name} = ?"
-                    else -> "${it.name} = ? :: $sqlType"
+                    null -> "\"${it.name}\" = ?"
+                    else -> "\"${it.name}\" = ? :: $sqlType"
                 }
             }
     }
