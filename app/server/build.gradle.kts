@@ -1,7 +1,7 @@
 plugins {
     id("kotlin-jvm-application")
     id("org.jetbrains.dokka")
-    kotlin("plugin.serialization") version "2.3.0-RC2"
+    kotlin("plugin.serialization") version "2.3.0"
 }
 
 val kotlinVersion: String by project
